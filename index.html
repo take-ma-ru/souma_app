@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>簿記1級 × Jett</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="簿記道場">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#06060f">
+<meta name="description" content="Jettと学ぶ簿記1級RPG学習アプリ">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+:root{
+  --p:#00d4d8;--pd:#009fa3;--pg:rgba(0,212,216,0.3);
+  --bg:#06060f;--bg2:#0e0e22;--bg3:#161630;
+  --card:#1a1a35;--card2:#22224a;
+  --tx:#e8e8ff;--tx2:#8888aa;
+  --err:#ff3355;--ok:#00ff88;--gold:#ffd700;
+  --boss:#cc44ff;
+  --fs-xs:13px;--fs-sm:15px;--fs-md:17px;--fs-lg:20px;--fs-xl:24px;--fs-xxl:30px;
+}
+body{font-family:-apple-system,'Hiragino Sans','Yu Gothic',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:16px;}
+#app{max-width:480px;margin:0 auto;min-height:100vh;background:var(--bg);}
+.screen{display:none;min-height:100vh;flex-direction:column;}
+.screen.active{display:flex;}
+
+/* TITLE */
+#s-title{background:linear-gradient(180deg,#06060f,#0d0d28,#06060f);align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.grid-bg{position:absolute;width:100%;height:100%;background:repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,212,216,0.04) 39px,rgba(0,212,216,0.04) 40px),repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,212,216,0.04) 39px,rgba(0,212,216,0.04) 40px);}
+.title-content{z-index:1;text-align:center;padding:40px 24px;width:100%;}
+.jett-img{width:200px;height:200px;object-fit:contain;object-position:top;filter:drop-shadow(0 0 20px var(--pg));margin:0 auto 24px;display:block;}
+.title-logo{font-size:var(--fs-xxl);font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,var(--p),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px;}
+.title-sub{font-size:var(--fs-sm);color:var(--tx2);margin-bottom:36px;letter-spacing:1px;}
+.jett-quote{background:var(--card);border-left:3px solid var(--p);padding:14px 18px;border-radius:0 8px 8px 0;margin:0 16px 32px;font-size:var(--fs-md);color:var(--p);font-style:italic;line-height:1.6;}
+.btn{border:none;padding:18px 40px;font-size:var(--fs-md);font-weight:700;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:all .2s;}
+.btn-primary{background:var(--p);color:#000;box-shadow:0 0 20px var(--pg);animation:glow 2s infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 20px var(--pg);}50%{box-shadow:0 0 40px var(--pg),0 0 60px var(--pg);}}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;padding:16px 16px 12px;gap:12px;background:var(--bg);border-bottom:1px solid var(--bg3);position:sticky;top:0;z-index:10;}
+.hdr-back{background:var(--card);border:none;color:var(--p);padding:10px 16px;border-radius:6px;cursor:pointer;font-size:var(--fs-sm);}
+.hdr-title{font-size:var(--fs-md);font-weight:700;flex:1;}
+.hdr-progress{font-size:var(--fs-xs);color:var(--tx2);}
+
+/* WORLD MAP */
+.wm-hero{padding:20px;text-align:center;}
+.wm-title{font-size:var(--fs-xl);font-weight:900;margin-bottom:6px;}
+.wm-sub{font-size:var(--fs-sm);color:var(--tx2);margin-bottom:16px;}
+.overall-bar{background:var(--card);border-radius:4px;height:10px;overflow:hidden;margin-bottom:6px;}
+.overall-bar-fill{height:100%;background:linear-gradient(90deg,var(--p),var(--pd));border-radius:4px;transition:width .5s;}
+.overall-pct{font-size:var(--fs-sm);color:var(--tx2);}
+.cat-grid{padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.cat-card{background:var(--card);border-radius:12px;padding:20px 14px;cursor:pointer;transition:all .2s;border:2px solid transparent;position:relative;overflow:hidden;}
+.cat-card.cleared{border-color:var(--p);}
+.cat-emoji{font-size:36px;margin-bottom:10px;}
+.cat-name{font-size:var(--fs-md);font-weight:700;margin-bottom:6px;}
+.cat-boss{font-size:var(--fs-xs);color:var(--tx2);margin-bottom:10px;}
+.cat-bar{background:var(--bg2);border-radius:2px;height:5px;overflow:hidden;}
+.cat-bar-fill{height:100%;border-radius:2px;transition:width .5s;}
+.cat-pct{font-size:var(--fs-xs);color:var(--tx2);margin-top:5px;}
+.cleared-badge{position:absolute;top:8px;right:8px;background:var(--p);color:#000;font-size:11px;font-weight:700;padding:3px 7px;border-radius:10px;}
+.boss-badge{position:absolute;top:8px;right:8px;background:var(--boss);color:#fff;font-size:11px;font-weight:700;padding:3px 7px;border-radius:10px;}
+
+/* STAGE MAP */
+.stage-list{padding:12px;flex:1;}
+.section-card{background:var(--card);border-radius:10px;margin-bottom:14px;overflow:hidden;}
+.section-hdr{padding:16px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.section-icon{font-size:24px;}
+.section-name{font-size:var(--fs-md);font-weight:700;flex:1;}
+.section-status{font-size:var(--fs-xs);color:var(--tx2);}
+.section-status.cleared{color:var(--p);}
+.item-list{border-top:1px solid var(--bg2);}
+.item-row{padding:16px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid var(--bg2);}
+.item-row:last-child{border-bottom:none;}
+.item-icon{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;background:var(--bg2);flex-shrink:0;}
+.item-icon.done{background:rgba(0,212,216,0.2);}
+.item-name{font-size:var(--fs-md);flex:1;}
+.item-arrow{color:var(--tx2);font-size:18px;}
+.boss-row{padding:16px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;background:rgba(204,68,255,0.1);border-top:1px solid rgba(204,68,255,0.3);}
+.boss-row-icon{font-size:28px;}
+.boss-row-name{font-size:var(--fs-md);font-weight:700;color:var(--boss);flex:1;}
+.boss-row-status{font-size:var(--fs-xs);color:var(--tx2);}
+
+/* STUDY */
+.study-body{flex:1;padding:20px;overflow-y:auto;}
+.study-char{display:flex;align-items:flex-end;gap:12px;margin-bottom:18px;}
+.study-bubble{background:var(--card);border-radius:12px 12px 12px 0;padding:14px 16px;font-size:var(--fs-md);color:var(--p);max-width:82%;line-height:1.6;border:1px solid var(--pg);}
+.study-jett{width:54px;height:54px;object-fit:contain;object-position:top;flex-shrink:0;}
+.study-section-title{font-size:var(--fs-xl);font-weight:900;margin-bottom:8px;}
+.study-section-sub{font-size:var(--fs-sm);color:var(--tx2);margin-bottom:20px;}
+.study-content{font-size:var(--fs-md);line-height:1.85;color:var(--tx);}
+.study-content h3{font-size:var(--fs-lg);font-weight:700;color:var(--p);margin:18px 0 10px;}
+.study-content p{margin-bottom:14px;}
+.study-content .formula{background:var(--card);border:1px solid var(--pg);border-radius:8px;padding:14px;font-family:monospace;font-size:var(--fs-sm);color:var(--p);margin:12px 0;line-height:1.8;}
+.study-content .point{background:rgba(0,212,216,0.1);border-left:3px solid var(--p);padding:12px 14px;border-radius:0 6px 6px 0;margin:12px 0;font-size:var(--fs-sm);line-height:1.7;}
+.study-footer{padding:20px;border-top:1px solid var(--bg3);}
+.btn-full{width:100%;padding:18px;font-size:var(--fs-md);font-weight:700;border-radius:10px;cursor:pointer;border:none;background:var(--p);color:#000;}
+
+/* QUIZ */
+.quiz-body{flex:1;padding:20px;display:flex;flex-direction:column;}
+.quiz-progress{display:flex;gap:4px;margin-bottom:20px;}
+.quiz-dot{flex:1;height:5px;border-radius:3px;background:var(--card2);}
+.quiz-dot.done{background:var(--p);}
+.quiz-dot.current{background:var(--pd);}
+.quiz-enemy{text-align:center;margin-bottom:16px;}
+.quiz-enemy-icon{font-size:52px;}
+.quiz-enemy-name{font-size:var(--fs-sm);color:var(--tx2);margin-top:6px;}
+.quiz-bubble{background:var(--card);border-radius:0 12px 12px 12px;padding:14px 16px;font-size:var(--fs-sm);color:#ff9944;margin-bottom:18px;border:1px solid rgba(255,153,68,0.3);line-height:1.6;}
+.quiz-q{font-size:var(--fs-md);font-weight:600;line-height:1.7;margin-bottom:20px;flex:1;}
+.quiz-choices{display:grid;gap:12px;}
+.choice-btn{background:var(--card);border:2px solid var(--card2);padding:16px 18px;border-radius:10px;cursor:pointer;font-size:var(--fs-md);color:var(--tx);text-align:left;transition:all .15s;line-height:1.5;}
+.choice-btn.selected-correct{border-color:var(--ok);background:rgba(0,255,136,0.15);color:var(--ok);}
+.choice-btn.selected-wrong{border-color:var(--err);background:rgba(255,51,85,0.15);color:var(--err);}
+.choice-btn.show-correct{border-color:var(--ok);background:rgba(0,255,136,0.1);}
+.choice-btn:disabled{cursor:default;}
+.quiz-feedback{padding:14px 16px;border-radius:10px;margin-top:14px;font-size:var(--fs-md);display:none;line-height:1.6;}
+.quiz-feedback.correct{background:rgba(0,255,136,0.15);border:1px solid var(--ok);color:var(--ok);display:block;}
+.quiz-feedback.wrong{background:rgba(255,51,85,0.15);border:1px solid var(--err);color:var(--err);display:block;}
+.quiz-jett-msg{font-size:var(--fs-sm);color:var(--p);margin-top:10px;font-style:italic;}
+.quiz-next-btn{margin-top:18px;width:100%;padding:16px;background:var(--p);color:#000;border:none;border-radius:10px;font-size:var(--fs-md);font-weight:700;cursor:pointer;display:none;}
+
+/* RESULT */
+.result-body{flex:1;padding:30px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;}
+.result-score{font-size:72px;font-weight:900;}
+.result-score.pass{color:var(--ok);text-shadow:0 0 30px var(--ok);}
+.result-score.fail{color:var(--err);text-shadow:0 0 30px var(--err);}
+.result-label{font-size:var(--fs-lg);font-weight:700;margin:10px 0 6px;}
+.result-sub{font-size:var(--fs-md);color:var(--tx2);margin-bottom:24px;}
+.result-jett{font-size:var(--fs-md);color:var(--p);background:var(--card);border:1px solid var(--pg);padding:16px 18px;border-radius:12px;margin:0 0 24px;line-height:1.6;}
+.result-btns{display:grid;gap:12px;width:100%;}
+
+/* BATTLE */
+#s-battle{background:#000;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.battle-bg{position:absolute;width:100%;height:100%;background:radial-gradient(circle at center,#1a0030,#000 70%);}
+.battle-content{z-index:1;text-align:center;padding:40px 24px;width:100%;}
+.battle-enemy{font-size:88px;margin-bottom:16px;display:block;}
+.battle-enemy-name{font-size:var(--fs-lg);color:#ff9944;margin-bottom:24px;}
+.battle-enemy-quote{font-size:var(--fs-md);color:#ffcc88;background:rgba(255,153,68,0.15);border:1px solid rgba(255,153,68,0.3);padding:14px;border-radius:10px;margin-bottom:32px;line-height:1.6;}
+.battle-jett{width:130px;height:130px;object-fit:contain;object-position:top;filter:drop-shadow(0 0 20px var(--pg));display:block;margin:0 auto 16px;}
+.battle-jett-quote{font-size:var(--fs-md);color:var(--p);margin-top:10px;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.fade-in{animation:fadeUp .4s ease;}
+
+/* BOSS */
+.boss-hdr{padding:20px;}
+.boss-title{font-size:var(--fs-sm);color:var(--boss);margin-bottom:10px;font-weight:700;letter-spacing:1px;}
+.hp-bar-wrap{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+.hp-label{font-size:var(--fs-sm);color:var(--tx2);width:32px;}
+.hp-bar{flex:1;height:12px;background:var(--card2);border-radius:6px;overflow:hidden;}
+.hp-fill{height:100%;border-radius:6px;transition:width .4s ease;}
+.hp-fill.boss-hp{background:linear-gradient(90deg,var(--err),var(--boss));}
+.hp-fill.jett-hp{background:linear-gradient(90deg,var(--p),var(--ok));}
+.boss-enemy{text-align:center;padding:16px 20px;}
+.boss-icon{font-size:80px;margin-bottom:10px;}
+.boss-name{font-size:var(--fs-lg);font-weight:900;color:var(--boss);margin-bottom:6px;}
+.boss-quote-bubble{background:rgba(204,68,255,0.15);border:1px solid rgba(204,68,255,0.4);border-radius:12px;padding:14px 18px;font-size:var(--fs-sm);color:#cc88ff;margin:0 16px 14px;line-height:1.6;}
+.jett-boss-bubble{background:rgba(0,212,216,0.15);border:1px solid var(--pg);border-radius:12px;padding:14px 18px;font-size:var(--fs-sm);color:var(--p);margin:0 16px 18px;line-height:1.6;}
+.boss-quiz{padding:0 16px 20px;}
+.boss-q{font-size:var(--fs-md);font-weight:600;line-height:1.7;margin-bottom:18px;}
+.boss-choices{display:grid;gap:10px;}
+
+/* BOSS WIN */
+#s-bosswin{background:#000;align-items:center;justify-content:center;text-align:center;overflow:hidden;position:relative;}
+.bosswin-content{z-index:1;padding:40px 24px;}
+.bosswin-stars{font-size:52px;letter-spacing:4px;margin-bottom:20px;}
+.bosswin-title{font-size:var(--fs-xxl);font-weight:900;color:var(--gold);text-shadow:0 0 20px var(--gold);margin-bottom:10px;}
+.bosswin-jett{width:150px;height:150px;object-fit:contain;object-position:top;display:block;margin:20px auto;filter:drop-shadow(0 0 30px var(--pg));}
+.bosswin-quote{font-size:var(--fs-md);color:var(--p);background:var(--card);border:1px solid var(--pg);padding:18px;border-radius:12px;margin:0 0 24px;line-height:1.7;}
+
+/* PROGRESS */
+.prog-body{padding:20px;flex:1;overflow-y:auto;}
+.prog-header{text-align:center;margin-bottom:24px;}
+.prog-jett{width:110px;height:110px;object-fit:contain;object-position:top;display:block;margin:0 auto 14px;filter:drop-shadow(0 0 15px var(--pg));}
+.prog-name{font-size:var(--fs-xl);font-weight:900;}
+.prog-total{font-size:var(--fs-sm);color:var(--tx2);}
+.prog-cat-list{display:grid;gap:14px;}
+.prog-cat{background:var(--card);border-radius:10px;padding:18px;}
+.prog-cat-name{font-size:var(--fs-md);font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.prog-bar{background:var(--bg2);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px;}
+.prog-bar-fill{height:100%;border-radius:4px;transition:width .5s;}
+.prog-pct{font-size:var(--fs-sm);color:var(--tx2);}
+.review-section{margin-top:20px;}
+.review-title{font-size:var(--fs-md);font-weight:700;color:var(--err);margin-bottom:12px;}
+.review-item{background:var(--card);border-radius:8px;padding:14px;margin-bottom:10px;font-size:var(--fs-sm);border-left:3px solid var(--err);line-height:1.6;}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="s-title" class="screen active"></div>
+  <div id="s-world" class="screen"></div>
+  <div id="s-stage" class="screen"></div>
+  <div id="s-study" class="screen"></div>
+  <div id="s-quiz" class="screen"></div>
+  <div id="s-battle" class="screen"></div>
+  <div id="s-boss" class="screen"></div>
+  <div id="s-bosswin" class="screen"></div>
+  <div id="s-result" class="screen"></div>
+  <div id="s-progress" class="screen"></div>
+</div>
+<script>
+'use strict';
+
+// Jett画像パス（同一フォルダ内）
+var JETT_IMG = 'jett.jpg';
+
+// ゲームデータ
+var GD = {
+  categories: [
+    {
+      id:'comm', name:'商業簿記', emoji:'📘', color:'#4488ff',
+      boss:{name:'商売の鬼', icon:'👹',
+        appear:'…よう来たな。商業簿記をなめとったら、痛い目みるで',
+        jettAppear:'商売の鬼…ここが正念場たい。行くよ',
+        die:'…負けた。まあ、ええ根性しとるわ',
+        jettWin:'強かったばい。でも、私の方が上やったたい'},
+      sections:[
+        {id:'cash', name:'現金・預金', icon:'💴',
+          boss:{name:'現金・預金の亡者', icon:'👻',
+            appear:'現金管理もできんくせに、よう来たな',
+            jettAppear:'現金・預金…基本中の基本たい。絶対負けんよ',
+            die:'…なんでや。完璧に守っとったのに',
+            jettWin:'基本をなめたらいかんばい'},
+          items:[
+            {id:'cash1', name:'小口現金制度',
+              content:'<h3>小口現金制度とは</h3><p>日常的な少額の支払いを処理するための制度。会計係が小口現金係に一定額の資金を前渡しし、支払いの都度記録を行う。</p><h3>定額資金前渡制度（インプレスト・システム）</h3><p>最も一般的な方式。一定額を常に保持し、使った分だけ補給する方式。</p><div class="formula">補給額 = 支払合計額<br>残高 = 小口現金限度額 - 支払合計額</div><div class="point">ポイント：小口現金出納帳の締め切りは月末・補給時の両方で行う</div>',
+              questions:[
+                {type:'4択', q:'定額資金前渡制度において小口現金の補給額はどれか？', choices:['小口現金限度額 - 残高','支払合計額','小口現金限度額 ÷ 月数','受取合計額 - 支払合計額'], answer:1, explain:'補給額は実際に支払った合計額に等しい。残高を限度額に戻す補給を行う。'},
+                {type:'○×', q:'小口現金出納帳の締め切りは、月末にしか行えない。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'月末だけでなく、補給時にも締め切りを行うことができる。'},
+              ]
+            },
+            {id:'cash2', name:'銀行勘定調整表',
+              content:'<h3>銀行勘定調整表とは</h3><p>企業の当座預金帳簿残高と銀行の残高証明書残高の不一致を解明する表。</p><div class="point">①未取付小切手：振り出したが銀行未処理<br>②未渡小切手：作成したが未渡し<br>③未取立小切手：取立依頼中<br>④振込未通知：入金されたが未通知</div><div class="formula">【銀行残高】<br>+ 未取立小切手<br>- 未取付小切手<br>= 正しい残高<br><br>【帳簿残高】<br>+ 振込未通知<br>- 未渡小切手<br>= 正しい残高</div>',
+              questions:[
+                {type:'4択', q:'企業が小切手を振り出したが銀行でまだ処理されていない場合の名称は？', choices:['未取立小切手','未取付小切手','未渡小切手','不渡小切手'], answer:1, explain:'振り出し済みで銀行未処理の小切手を「未取付小切手」という。銀行残高から控除して調整する。'},
+                {type:'○×', q:'未渡小切手は、帳簿残高に加算して調整する。', choices:['○（正しい）','×（誤り）'], answer:0, explain:'未渡小切手は振り出し処理済みだが未渡し。帳簿残高に加算して調整する。'},
+              ]
+            },
+          ]
+        },
+        {id:'ar', name:'売掛・買掛金', icon:'🧾',
+          boss:{name:'売掛・買掛の番人', icon:'🛡️',
+            appear:'売掛金と買掛金の違い、ちゃんと分かっとるんか？',
+            jettAppear:'当然たい。かかってきんね',
+            die:'…うそやろ、完璧に覚えとるやんか',
+            jettWin:'片付けたばい。次行くよ'},
+          items:[
+            {id:'ar1', name:'売掛金・買掛金の基礎',
+              content:'<h3>売掛金と買掛金</h3><p>売掛金：商品を販売し、代金を後日受け取る権利（資産）<br>買掛金：商品を仕入れ、代金を後日支払う義務（負債）</p><h3>貸倒引当金</h3><p>売掛金の回収不能見込額を引当金として計上。</p><div class="formula">貸倒引当金繰入 = 期末売掛金 × 貸倒実績率</div>',
+              questions:[
+                {type:'4択', q:'貸倒実績率が2%、期末売掛金残高が500万円の場合、貸倒引当金の繰入額は？', choices:['5万円','10万円','20万円','25万円'], answer:1, explain:'500万円 × 2% = 10万円。この金額を貸倒引当金として繰り入れる。'},
+                {type:'○×', q:'電子記録債権は「受取手形」勘定で処理する。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'電子記録債権は「電子記録債権」という独立した勘定科目で処理する。'},
+              ]
+            },
+          ]
+        },
+        {id:'fa', name:'固定資産', icon:'🏭',
+          boss:{name:'固定資産の守護者', icon:'🗿',
+            appear:'定額法？定率法？どっちも答えてみいや',
+            jettAppear:'両方いけるばい。見せてあげるたい',
+            die:'…まさか全問正解するとは',
+            jettWin:'固定資産、制圧完了たい'},
+          items:[
+            {id:'fa1', name:'減価償却',
+              content:'<h3>減価償却の主な方法</h3><div class="point">①定額法：毎期同額<br>　償却額 = (取得原価 - 残存価額) ÷ 耐用年数<br>②定率法：未償却残高に定率を乗じる<br>　償却額 = 期首帳簿価額 × 償却率</div><h3>200%定率法</h3><div class="formula">償却率 = 定額法の償却率 × 200%<br>例：耐用年数5年 → 定額率20% → 定率率40%</div>',
+              questions:[
+                {type:'4択', q:'取得原価1,000万円、残存価額0円、耐用年数5年の定額法による年間減価償却費は？', choices:['100万円','150万円','200万円','250万円'], answer:2, explain:'(1,000万円 - 0円) ÷ 5年 = 200万円/年'},
+                {type:'4択', q:'200%定率法で耐用年数5年の場合の償却率は？', choices:['20%','30%','40%','50%'], answer:2, explain:'定額法率1/5=20%。200%定率法では20%×200%=40%。'},
+                {type:'○×', q:'定率法では毎期の減価償却費は一定となる。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'定率法は期首帳簿価額に定率を乗じるため逓減する。毎期同額なのは定額法。'},
+              ]
+            },
+            {id:'fa2', name:'減損会計',
+              content:'<h3>減損会計とは</h3><p>固定資産の収益性が著しく低下した場合に帳簿価額を回収可能価額まで切り下げる会計処理。</p><div class="point">①減損の兆候の把握<br>②減損損失の認識（割引前将来CF ＜ 帳簿価額）<br>③減損損失の測定（帳簿価額 - 回収可能価額）</div><div class="formula">回収可能価額 = Max(正味売却価額, 使用価値)</div>',
+              questions:[
+                {type:'4択', q:'減損損失の認識判定において帳簿価額と比較するものは？', choices:['取得原価','公正価値','割引前将来キャッシュフロー','回収可能価額'], answer:2, explain:'割引前将来CFが帳簿価額を下回る場合に減損損失を認識する。'},
+                {type:'○×', q:'減損損失 = 帳簿価額 - 正味売却価額 で計算される。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'減損損失 = 帳簿価額 - 回収可能価額。回収可能価額は正味売却価額と使用価値のいずれか高い方。'},
+              ]
+            },
+          ]
+        },
+        {id:'prov', name:'引当金', icon:'🛡️',
+          boss:{name:'引当金の幻影', icon:'👁️',
+            appear:'引当金の要件、全部言えるんか？言えへんやろ',
+            jettAppear:'全部言えるばい。行くよ',
+            die:'…完璧やんか。もう何も言えんわ',
+            jettWin:'引当金、制圧完了たい'},
+          items:[
+            {id:'prov1', name:'引当金の4要件',
+              content:'<h3>引当金の設定要件（4つすべて満たすこと）</h3><div class="point">①将来の特定の費用または損失であること<br>②発生が当期以前の事象に起因していること<br>③発生の可能性が高いこと<br>④金額を合理的に見積もることができること</div><h3>主な引当金</h3><p>貸倒引当金・退職給付引当金・製品保証引当金・賞与引当金</p>',
+              questions:[
+                {type:'4択', q:'引当金の設定要件として誤っているものはどれか？', choices:['将来の特定の費用または損失','当期以前の事象に起因','発生の可能性が高い','確定した債務であること'], answer:3, explain:'引当金は「確定した債務」ではなく「発生の可能性が高い」ことが要件。確定債務は未払費用。'},
+                {type:'○×', q:'賞与引当金は引当金の4要件を満たすため計上できる。', choices:['○（正しい）','×（誤り）'], answer:0, explain:'賞与引当金は4要件を満たし当期の費用として計上する。'},
+              ]
+            },
+          ]
+        },
+        {id:'sec', name:'有価証券', icon:'📈',
+          boss:{name:'有価証券の魔術師', icon:'🧙',
+            appear:'売買目的？満期保有？その他有価証券？全部違うんやで',
+            jettAppear:'全部覚えとるたい。かかってきんね',
+            die:'…ここまで理解しとるとは、思わんかったわ',
+            jettWin:'有価証券、もらったばい'},
+          items:[
+            {id:'sec1', name:'有価証券の分類と評価',
+              content:'<h3>有価証券の4分類と評価方法</h3><div class="point">①売買目的有価証券：時価評価、評価差額は損益<br>②満期保有目的債券：償却原価法（時価評価なし）<br>③子会社・関連会社株式：取得原価法<br>④その他有価証券：時価評価、評価差額はOCI（純資産）</div>',
+              questions:[
+                {type:'4択', q:'その他有価証券の期末評価における評価差額の処理は？', choices:['当期の損益','繰延税金負債のみ計上','税効果考慮後に純資産（その他包括利益）','取得原価のまま'], answer:2, explain:'その他有価証券は全部純資産直入法が原則。税効果調整後の評価差額を純資産に計上。'},
+                {type:'○×', q:'満期保有目的債券は期末に時価評価して評価差額を損益計上する。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'満期保有目的債券は償却原価法を適用し、時価評価は行わない。'},
+              ]
+            },
+          ]
+        },
+        {id:'cons', name:'連結会計', icon:'🏢',
+          boss:{name:'連結会計の支配者', icon:'👑',
+            appear:'連結修正仕訳の前に膝ついたやつ、何人見てきたと思てんねん',
+            jettAppear:'私は違うよ。終わりにするばい',
+            die:'…なんでこんな奴に負けるんや',
+            jettWin:'あなたが強かけん、私も強くなれたたい。…ありがとね'},
+          items:[
+            {id:'cons1', name:'連結の基礎・のれん',
+              content:'<h3>のれんの計算</h3><div class="formula">のれん = 投資額 - 子会社純資産の親会社持分額<br>のれんは20年以内に規則的に償却</div><h3>連結修正仕訳</h3><div class="point">①投資と資本の相殺<br>②内部取引の消去<br>③未実現利益の消去<br>④のれんの償却</div>',
+              questions:[
+                {type:'4択', q:'親会社がA社株式60%を1,200万円取得、取得時のA社純資産1,800万円。のれんは？', choices:['120万円','180万円','60万円','240万円'], answer:0, explain:'親会社持分=1,800×60%=1,080万円。のれん=1,200-1,080=120万円。'},
+                {type:'○×', q:'のれんは資産計上後、定期的な償却は不要である（減損のみ）。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'日本基準ではのれんは20年以内に規則的に償却する。'},
+                {type:'4択', q:'連結で内部取引を消去する理由は？', choices:['利益を大きく見せるため','グループ外部との取引のみを反映するため','税負担を軽減するため','子会社情報を非開示にするため'], answer:1, explain:'連結財務諸表はグループを一つの企業体と捉え、内部取引を消去して外部取引のみを表示する。'},
+              ]
+            },
+          ]
+        },
+      ]
+    },
+    {
+      id:'indus', name:'工業簿記', emoji:'📗', color:'#44bb44',
+      boss:{name:'原価の亡霊', icon:'💀',
+        appear:'製造原価も分からんくせに、よう踏み込んできたな',
+        jettAppear:'原価の亡霊…ここで終わりにするばい',
+        die:'…工業簿記の深さ、少しは分かったか？',
+        jettWin:'全部分かったばい。次行くよ'},
+      sections:[
+        {id:'mat', name:'材料費', icon:'🔩',
+          boss:{name:'材料費の亡霊', icon:'👻',
+            appear:'材料の消費量、正確に計算できるんか？',
+            jettAppear:'先入先出法も平均法も任せんね',
+            die:'…完璧な計算やった。認めたるわ',
+            jettWin:'材料費、制圧完了たい'},
+          items:[
+            {id:'mat1', name:'材料費の計算',
+              content:'<h3>材料費の分類</h3><div class="point">直接材料費：製品に直接使用（主要材料費、買入部品費）<br>間接材料費：間接的に使用（補助材料費、消耗品）</div><h3>消費単価計算</h3><div class="formula">①先入先出法：先に入庫した材料から順に消費<br>②移動平均法：入庫のたびに平均単価を計算<br>③総平均法：期末に全体の平均単価で計算</div>',
+              questions:[
+                {type:'4択', q:'期首在庫100kg@200円、当期仕入200kg@220円、当期消費150kgの先入先出法による消費額は？', choices:['30,000円','31,000円','33,000円','32,000円'], answer:0, explain:'先入先出法：期首100kg×200円=20,000円＋追加50kg×220円=11,000円、計30,000円。'},
+                {type:'○×', q:'移動平均法では材料を入庫するたびに平均単価を再計算する。', choices:['○（正しい）','×（誤り）'], answer:0, explain:'移動平均法は入庫のたびに平均単価を計算する。期末一括計算は総平均法。'},
+              ]
+            },
+          ]
+        },
+        {id:'labor', name:'労務費', icon:'👷',
+          boss:{name:'労務費の番人', icon:'🛡️',
+            appear:'直接労務費と間接労務費、ちゃんと区別できとるか？',
+            jettAppear:'当然たい。行くよ',
+            die:'…うそやろ、全部正確やんか',
+            jettWin:'労務費、制圧完了たい'},
+          items:[
+            {id:'lab1', name:'労務費の分類と計算',
+              content:'<h3>労務費の分類</h3><div class="point">直接労務費：製品製造に直接従事した労働者の賃金<br>間接労務費：間接的に関わる者の給与（工場管理者等）</div><div class="formula">当月消費賃金<br>= 当月支払賃金<br>+ 当月末未払賃金<br>- 前月末未払賃金</div>',
+              questions:[
+                {type:'4択', q:'当月賃金支払50万円、当月末未払8万円、前月末未払5万円の場合の消費賃金は？', choices:['53万円','47万円','55万円','45万円'], answer:0, explain:'50万円 + 8万円 - 5万円 = 53万円。'},
+                {type:'○×', q:'工場長の給与は直接労務費に分類される。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'工場長は製品製造に直接従事していないため間接労務費に分類される。'},
+              ]
+            },
+          ]
+        },
+        {id:'mfgoh', name:'製造間接費', icon:'⚙️',
+          boss:{name:'製造間接費の支配者', icon:'👺',
+            appear:'配賦基準、何使うんや？答えてみいや',
+            jettAppear:'直接作業時間でも機械時間でも答えられるばい',
+            die:'…もう教えることないわ',
+            jettWin:'製造間接費、制圧完了たい'},
+          items:[
+            {id:'mfg1', name:'製造間接費の配賦と差異分析',
+              content:'<h3>予定配賦</h3><div class="formula">予定配賦率 = 製造間接費予算額 ÷ 基準操業度<br>予定配賦額 = 予定配賦率 × 実際操業度</div><h3>差異分析</h3><div class="formula">予算差異 = 実際発生額 - 予算許容額<br>操業度差異 = 固定費率 × (実際操業度 - 基準操業度)</div>',
+              questions:[
+                {type:'4択', q:'製造間接費予算600万円、基準操業度10,000時間の場合の予定配賦率は？', choices:['500円/時間','600円/時間','700円/時間','800円/時間'], answer:1, explain:'600万円 ÷ 10,000時間 = 600円/時間。'},
+                {type:'○×', q:'操業度差異は実際操業度が基準操業度を上回る場合、有利差異（貸方差異）となる。', choices:['○（正しい）','×（誤り）'], answer:0, explain:'操業度差異＝固定費率×(実際-基準)。実際>基準なら正（貸方・有利）差異。'},
+              ]
+            },
+          ]
+        },
+        {id:'job', name:'個別・総合原価計算', icon:'📊',
+          boss:{name:'総合原価計算の魔王', icon:'🔮',
+            appear:'月末仕掛品の評価、どうするんや？',
+            jettAppear:'先入先出法か平均法か、どっちでも来いたい',
+            die:'…この計算力、認めたるわ',
+            jettWin:'総合原価計算、もらったばい'},
+          items:[
+            {id:'job1', name:'個別・総合原価計算',
+              content:'<h3>個別原価計算</h3><p>受注生産型。製造指図書ごとに原価を集計。</p><h3>総合原価計算</h3><p>大量生産型。一定期間の総原価を総生産量で割って単位原価を計算。</p><div class="formula">月末仕掛品原価<br>= 月初仕掛品 + 当月投入 - 完成品原価</div>',
+              questions:[
+                {type:'4択', q:'当月投入200万円、月初仕掛品30万円、完成品190万円の場合の月末仕掛品原価は？', choices:['30万円','40万円','50万円','60万円'], answer:1, explain:'30 + 200 - 190 = 40万円。'},
+                {type:'○×', q:'個別原価計算は同種製品を連続大量生産する場合に最適な方法である。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'個別原価計算は受注生産型。大量生産には総合原価計算が適している。'},
+              ]
+            },
+          ]
+        },
+      ]
+    },
+    {
+      id:'acct', name:'会計学', emoji:'📙', color:'#ffaa22',
+      boss:{name:'基準の番人', icon:'⚖️',
+        appear:'会計基準を全部暗記しとるとでも思っとるんか？',
+        jettAppear:'暗記じゃなか、理解しとるばい。やってみせるよ',
+        die:'…会計学の本質、分かっとるんやな',
+        jettWin:'基準の番人…強かったばい。でも私の方が上たい'},
+      sections:[
+        {id:'cf', name:'概念フレームワーク', icon:'🏛️',
+          boss:{name:'概念フレームワークの亡霊', icon:'👻',
+            appear:'財務報告の目的、言えるんか？',
+            jettAppear:'言えるばい。全部答えてみせるよ',
+            die:'…完璧な理解やった',
+            jettWin:'概念フレームワーク、制圧完了たい'},
+          items:[
+            {id:'cf1', name:'財務報告の目的と質的特性',
+              content:'<h3>会計情報の質的特性</h3><div class="point">【主要な質的特性】<br>①意思決定有用性<br>　・目的適合性（予測価値、フィードバック価値、適時性）<br>　・信頼性（検証可能性、表現の忠実性、中立性）</div><h3>会計公準</h3><div class="formula">①企業実体の公準<br>②継続企業の公準（ゴーイング・コンサーン）<br>③貨幣的測定の公準</div>',
+              questions:[
+                {type:'4択', q:'「目的適合性」に含まれないものはどれか？', choices:['予測価値','フィードバック価値','中立性','適時性'], answer:2, explain:'中立性は「信頼性」の構成要素。目的適合性は予測価値・フィードバック価値・適時性から構成される。'},
+                {type:'○×', q:'継続企業の公準とは企業が将来にわたって存続するという仮定のことである。', choices:['○（正しい）','×（誤り）'], answer:0, explain:'継続企業の公準（ゴーイング・コンサーン）は企業が継続して事業を営むという前提。'},
+              ]
+            },
+          ]
+        },
+        {id:'rev', name:'収益認識', icon:'💰',
+          boss:{name:'収益認識の番人', icon:'🛡️',
+            appear:'5ステップ、全部言えるか？',
+            jettAppear:'全部言えるたい。かかってきんね',
+            die:'…収益認識基準、完全に理解しとるやんか',
+            jettWin:'収益認識、制圧完了たい'},
+          items:[
+            {id:'rev1', name:'収益認識の5ステップ',
+              content:'<h3>収益認識の5ステップ</h3><div class="point">Step1：顧客との契約を識別する<br>Step2：履行義務を識別する<br>Step3：取引価格を算定する<br>Step4：取引価格を履行義務に配分する<br>Step5：履行義務の充足時に収益を認識する</div>',
+              questions:[
+                {type:'4択', q:'収益認識5ステップの第3ステップは？', choices:['履行義務を識別する','取引価格を算定する','顧客との契約を識別する','収益を認識する'], answer:1, explain:'Step1:契約識別、Step2:履行義務識別、Step3:取引価格算定、Step4:配分、Step5:認識。'},
+                {type:'○×', q:'変動対価は重大な収益の戻し入れが生じない可能性が高い範囲でのみ取引価格に含める。', choices:['○（正しい）','×（誤り）'], answer:0, explain:'変動対価はコンストレイントを適用して認識する。'},
+              ]
+            },
+          ]
+        },
+        {id:'tax', name:'税効果会計', icon:'📑',
+          boss:{name:'税効果会計の鬼', icon:'👹',
+            appear:'一時差異と永久差異、区別できとるんか？',
+            jettAppear:'当然たい。全部答えてみせるよ',
+            die:'…繰延税金資産まで完璧やんか',
+            jettWin:'税効果会計、制圧完了たい'},
+          items:[
+            {id:'tax1', name:'一時差異と税効果会計',
+              content:'<h3>差異の種類</h3><div class="point">一時差異：会計と税務の認識タイミングの差。将来解消する。<br>　・将来減算一時差異 → 繰延税金資産<br>　・将来加算一時差異 → 繰延税金負債<br>永久差異：永久に解消しない差（交際費等）。税効果なし。</div><div class="formula">繰延税金資産（負債）= 一時差異 × 法定実効税率</div>',
+              questions:[
+                {type:'4択', q:'将来減算一時差異100万円、法定実効税率30%の場合の繰延税金資産は？', choices:['30万円','70万円','100万円','130万円'], answer:0, explain:'繰延税金資産 = 100万円 × 30% = 30万円。'},
+                {type:'○×', q:'交際費の損金不算入額は一時差異であるため税効果会計の対象となる。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'交際費の損金不算入は永久差異であるため税効果会計の対象外。'},
+              ]
+            },
+          ]
+        },
+        {id:'retire', name:'退職給付会計', icon:'🏖️',
+          boss:{name:'退職給付の魔術師', icon:'🧙',
+            appear:'退職給付債務の計算、正確にできるか？',
+            jettAppear:'任せんね。行くよ',
+            die:'…もう何も言えんわ',
+            jettWin:'退職給付、もらったばい'},
+          items:[
+            {id:'ret1', name:'退職給付債務の計算',
+              content:'<h3>退職給付費用の構成</h3><div class="formula">退職給付費用<br>= 勤務費用<br>+ 利息費用（前期末PBO × 割引率）<br>- 期待運用収益<br>± 数理計算上の差異の費用処理額</div>',
+              questions:[
+                {type:'4択', q:'期首退職給付債務1億円、割引率2%の場合の利息費用は？', choices:['100万円','200万円','300万円','400万円'], answer:1, explain:'利息費用 = 1億円 × 2% = 200万円。'},
+                {type:'○×', q:'数理計算上の差異は発生した期に必ず一括費用処理しなければならない。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'数理計算上の差異は平均残存勤務期間以内の年数で按分して費用処理（遅延認識）できる。'},
+              ]
+            },
+          ]
+        },
+      ]
+    },
+    {
+      id:'cost', name:'原価計算', emoji:'📕', color:'#ff5555',
+      boss:{name:'計算の魔王', icon:'🔮',
+        appear:'原価計算基準、全部頭に入っとるんか？なめとったら泣くで',
+        jettAppear:'計算の魔王…ここが最後の壁たい。越えてみせるよ',
+        die:'…完敗や。原価計算の全て、あんたのもんや',
+        jettWin:'強かったばい。これが私のスピードたい'},
+      sections:[
+        {id:'std', name:'標準原価計算', icon:'📐',
+          boss:{name:'標準原価計算の亡霊', icon:'👻',
+            appear:'原価差異分析、全部できるんか？',
+            jettAppear:'価格差異も数量差異も全部いけるばい',
+            die:'…完璧な分析やった',
+            jettWin:'標準原価計算、制圧完了たい'},
+          items:[
+            {id:'std1', name:'原価差異分析',
+              content:'<h3>直接材料費差異</h3><div class="formula">価格差異 = (標準単価 - 実際単価) × 実際消費量<br>数量差異 = (標準消費量 - 実際消費量) × 標準単価</div><h3>直接労務費差異</h3><div class="formula">賃率差異 = (標準賃率 - 実際賃率) × 実際作業時間<br>時間差異 = (標準時間 - 実際時間) × 標準賃率</div><div class="point">借方差異 = 不利差異　貸方差異 = 有利差異</div>',
+              questions:[
+                {type:'4択', q:'標準単価200円、実際単価210円、実際消費量1,000kgの材料価格差異は？', choices:['有利差異10,000円','不利差異10,000円','有利差異1,000円','不利差異1,000円'], answer:1, explain:'(200-210)×1,000=-10,000円。実際>標準なので不利差異（借方差異）。'},
+                {type:'4択', q:'標準消費量500kg、実際消費量480kg、標準単価200円の場合の数量差異は？', choices:['有利差異4,000円','不利差異4,000円','有利差異2,000円','不利差異2,000円'], answer:0, explain:'(500-480)×200=4,000円。実際<標準なので有利差異（貸方差異）。'},
+              ]
+            },
+          ]
+        },
+        {id:'dir', name:'直接原価計算', icon:'📉',
+          boss:{name:'直接原価計算の番人', icon:'🛡️',
+            appear:'全部原価計算との違い、説明できるか？',
+            jettAppear:'固定費の扱い方の違いたい。当然分かっとるよ',
+            die:'…完全に理解しとるやんか',
+            jettWin:'直接原価計算、もらったばい'},
+          items:[
+            {id:'dir1', name:'直接原価計算と全部原価計算',
+              content:'<h3>直接原価計算の特徴</h3><p>固定製造間接費を製品原価に含めず、期間費用として処理する。</p><div class="point">直接原価計算の製品原価 = 直接材料費 + 直接労務費 + 変動製造間接費（変動費のみ）</div><div class="formula">直接原価計算の利益 - 全部原価計算の利益<br>= 固定費 × (期末在庫量 - 期首在庫量) ÷ 生産量</div>',
+              questions:[
+                {type:'4択', q:'直接原価計算と全部原価計算の利益の差が生まれる主な原因は？', choices:['売上高の違い','変動費の計算方法','固定製造間接費の在庫への配分の違い','販売費の計上タイミング'], answer:2, explain:'直接原価計算は固定費を期間費用とし、全部原価計算は製品原価に含め在庫にも配分する。この差が利益の差となる。'},
+                {type:'○×', q:'直接原価計算では固定製造間接費は製品原価に含められる。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'直接原価計算では固定製造間接費は製品原価に含めず期間費用として処理する。'},
+              ]
+            },
+          ]
+        },
+        {id:'cvp', name:'CVP分析', icon:'📈',
+          boss:{name:'CVP分析の支配者', icon:'👺',
+            appear:'損益分岐点、すぐ計算できるんか？',
+            jettAppear:'任せんね。どんな問題でも来いたい',
+            die:'…計算速度も正確性も完璧やんか',
+            jettWin:'CVP分析、制圧完了たい'},
+          items:[
+            {id:'cvp1', name:'CVP分析の基礎',
+              content:'<h3>CVP分析の基本公式</h3><div class="formula">貢献利益 = 売上高 - 変動費<br>貢献利益率 = 貢献利益 ÷ 売上高<br><br>損益分岐点売上高 = 固定費 ÷ 貢献利益率<br>目標利益達成売上高 = (固定費 + 目標利益) ÷ 貢献利益率<br><br>安全余裕率 = (実際売上高 - 損益分岐点売上高) ÷ 実際売上高</div>',
+              questions:[
+                {type:'4択', q:'売上高500万円、変動費300万円、固定費150万円の損益分岐点売上高は？', choices:['300万円','375万円','400万円','450万円'], answer:1, explain:'貢献利益率=(500-300)/500=40%。損益分岐点=150÷40%=375万円。'},
+                {type:'4択', q:'上記の条件で目標利益50万円を達成するための売上高は？', choices:['450万円','500万円','550万円','600万円'], answer:1, explain:'(150+50)÷40%=500万円。'},
+                {type:'○×', q:'安全余裕率が高いほど売上が減少しても損失が出にくい。', choices:['○（正しい）','×（誤り）'], answer:0, explain:'安全余裕率が高いほど損益分岐点から遠く、売上減少への耐性が高い。'},
+              ]
+            },
+          ]
+        },
+        {id:'npv', name:'設備投資の意思決定', icon:'🏗️',
+          boss:{name:'設備投資の鬼', icon:'👹',
+            appear:'NPV法とIRR法、どっちが優れとるんや？',
+            jettAppear:'どっちにも一長一短あるばい。全部答えてみせるよ',
+            die:'…設備投資の判断基準、完璧に理解しとるやんか',
+            jettWin:'設備投資、もらったたい'},
+          items:[
+            {id:'npv1', name:'NPV法・IRR法・回収期間法',
+              content:'<h3>設備投資の評価方法</h3><div class="point">①NPV法（正味現在価値法）<br>　NPV = 将来CFの現在価値合計 - 初期投資額<br>　NPV &gt; 0 → 投資採択<br><br>②IRR法（内部収益率法）<br>　NPV = 0 となる割引率<br>　IRR &gt; 資本コスト → 投資採択<br><br>③回収期間法：初期投資 ÷ 年間CF</div>',
+              questions:[
+                {type:'4択', q:'初期投資1,000万円、毎年CF300万円（5年）、現価係数3.791の場合のNPVは？', choices:['137万円','-137万円','300万円','-300万円'], answer:0, explain:'現在価値=300×3.791=1,137万円。NPV=1,137-1,000=137万円 > 0 なので採択。'},
+                {type:'○×', q:'回収期間法は投資回収後のキャッシュフローも評価に反映する。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'回収期間法は回収期間のみを見るため、回収後のCFは考慮しない。これが欠点の一つ。'},
+              ]
+            },
+          ]
+        },
+      ]
+    },
+  ],
+  lassboss: {
+    name:'一級神', icon:'⚡',
+    appear:'…よう辿り着いたな。ワシを倒せた者は、まだ誰もおらん',
+    jettAppear:'…ずっと待っとったばい。今日が終わりたい',
+    die:'…負けた。ワシが負けるとは。お前は本物や',
+    jettWin:'簿記1級…もらったばい。あなたがおらんかったら、ここまで来れんかったたい。ありがとね',
+    questions:[
+      {type:'4択', q:'連結会計においてのれんの最長償却期間は？', choices:['5年','10年','20年','40年'], answer:2, explain:'のれんは20年以内に規則的に償却する（日本基準）。'},
+      {type:'4択', q:'固定費120万円、貢献利益率30%の損益分岐点売上高は？', choices:['300万円','360万円','400万円','450万円'], answer:2, explain:'120÷0.3=400万円。'},
+      {type:'○×', q:'永久差異は繰延税金資産・負債の計上対象となる。', choices:['○（正しい）','×（誤り）'], answer:1, explain:'永久差異（交際費の損金不算入等）は税効果会計の対象外。一時差異のみが対象。'},
+      {type:'4択', q:'標準原価計算における操業度差異の計算式は？', choices:['固定費率×(基準-実際)','変動費率×(実際-基準)','固定費率×(実際-基準)','変動費率×(基準-実際)'], answer:2, explain:'操業度差異 = 固定費率×(実際操業度-基準操業度)。プラスなら有利差異。'},
+      {type:'4択', q:'収益認識5ステップで変動対価の制約が関係するのはどのステップ？', choices:['Step1','Step2','Step3','Step4'], answer:2, explain:'Step3（取引価格の算定）で変動対価を見積もり、コンストレイントを適用する。'},
+    ]
+  }
+};
+
+// --- STATE ---
+var STORAGE_KEY = 'boki1_v2';
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"progress":{},"review":[]}'); }
+  catch(e) { return {progress:{}, review:[]}; }
+}
+function saveData() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({progress: ST.progress, review: ST.reviewList})); }
+  catch(e) {}
+}
+
+var saved = loadData();
+var ST = {
+  screen: 'title',
+  catId: null, secId: null, itemId: null,
+  bossKey: null, bossFight: null,
+  quiz: null,
+  progress: saved.progress,
+  reviewList: saved.review
+};
+
+function getProgress(id) { return ST.progress[id] || {cleared: false}; }
+function setCleared(id) { ST.progress[id] = {cleared: true}; saveData(); }
+function addWrong(q) { if (!ST.reviewList.includes(q)) ST.reviewList.push(q); saveData(); }
+
+function getCatProgress(cat) {
+  var total = 0, done = 0;
+  cat.sections.forEach(function(s) {
+    s.items.forEach(function(i) { total++; if(getProgress(i.id).cleared) done++; });
+    if(getProgress(s.id + '_boss').cleared) { total++; done++; }
+  });
+  if(getProgress(cat.id + '_boss').cleared) { total++; done++; }
+  return {total: total, done: done, pct: total ? Math.round(done/total*100) : 0};
+}
+
+function getTotalProgress() {
+  var total = 0, done = 0;
+  GD.categories.forEach(function(c) { var p = getCatProgress(c); total += p.total; done += p.done; });
+  return {total: total, done: done, pct: total ? Math.round(done/total*100) : 0};
+}
+
+// --- NAVIGATION ---
+function gotoScreen(screen) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  var el = document.getElementById('s-' + screen);
+  if(el) { el.classList.add('active'); el.scrollTop = 0; }
+  ST.screen = screen;
+  renderScreen(screen);
+}
+
+function renderScreen(screen) {
+  var map = {
+    title: renderTitle, world: renderWorld, stage: renderStage,
+    study: renderStudy, quiz: renderQuiz, battle: renderBattle,
+    boss: renderBoss,
+    progress: renderProgress
+  };
+  if(map[screen]) map[screen]();
+}
+
+// --- SCREENS ---
+function renderTitle() {
+  document.getElementById('s-title').innerHTML =
+    '<div class="grid-bg"></div>' +
+    '<div class="title-content">' +
+    '<img src="' + JETT_IMG + '" class="jett-img" alt="Jett">' +
+    '<div class="title-logo">簿記1級 × JETT</div>' +
+    '<div class="title-sub">学習RPG — 敵を倒して合格を掴め</div>' +
+    '<div class="jett-quote">「来たばい。今日も行くよ」</div>' +
+    '<button class="btn btn-primary" id="startBtn">ゲームスタート ▶</button>' +
+    '</div>';
+  document.getElementById('startBtn').addEventListener('click', function() { gotoScreen('world'); });
+}
+
+function renderWorld() {
+  var tp = getTotalProgress();
+  var allCatCleared = GD.categories.every(function(c) { return getProgress(c.id + '_boss').cleared; });
+  var h = '<div class="hdr">' +
+    '<div class="hdr-title">ワールドマップ</div>' +
+    '<button class="hdr-back" id="btnProgress">📊 進捗</button></div>' +
+    '<div class="wm-hero">' +
+    '<div class="wm-title">簿記1級への道</div>' +
+    '<div class="wm-sub">4つの大分野を制覇してラスボスを倒せ！</div>' +
+    '<div class="overall-bar"><div class="overall-bar-fill" style="width:' + tp.pct + '%"></div></div>' +
+    '<div class="overall-pct">全体進捗: ' + tp.done + '/' + tp.total + ' (' + tp.pct + '%)</div></div>' +
+    '<div class="cat-grid">';
+  GD.categories.forEach(function(cat) {
+    var p = getCatProgress(cat);
+    var cleared = getProgress(cat.id + '_boss').cleared;
+    var bossUnlocked = p.done >= p.total - 1;
+    h += '<div class="cat-card' + (cleared ? ' cleared' : '') + '" data-catid="' + cat.id + '">' +
+      (cleared ? '<div class="cleared-badge">✓ クリア</div>' : '') +
+      (!cleared && bossUnlocked ? '<div class="boss-badge">👹 BOSS</div>' : '') +
+      '<div class="cat-emoji">' + cat.emoji + '</div>' +
+      '<div class="cat-name">' + cat.name + '</div>' +
+      '<div class="cat-boss">ボス: ' + cat.boss.name + '</div>' +
+      '<div class="cat-bar"><div class="cat-bar-fill" style="width:' + p.pct + '%;background:' + cat.color + '"></div></div>' +
+      '<div class="cat-pct">' + p.done + '/' + p.total + ' (' + p.pct + '%)</div></div>';
+  });
+  h += '</div>';
+  if(allCatCleared) {
+    var lbCleared = getProgress('lassboss').cleared;
+    h += '<div style="padding:16px"><div class="section-card" style="border:2px solid var(--boss)">' +
+      '<div class="boss-row" id="btnLassBoss">' +
+      '<div class="boss-row-icon">⚡</div>' +
+      '<div class="boss-row-name" style="color:var(--boss)">ラスボス「一級神」</div>' +
+      '<div class="boss-row-status">' + (lbCleared ? '✓ 撃破済' : '⚔️ 挑戦') + '</div></div></div></div>';
+  }
+  document.getElementById('s-world').innerHTML = h;
+  document.getElementById('btnProgress').addEventListener('click', function() { gotoScreen('progress'); });
+  document.querySelectorAll('.cat-card[data-catid]').forEach(function(el) {
+    el.addEventListener('click', function() { ST.catId = this.dataset.catid; gotoScreen('stage'); });
+  });
+  var lb = document.getElementById('btnLassBoss');
+  if(lb) lb.addEventListener('click', function() { startBoss(null, 'lassboss'); });
+}
+
+function renderStage() {
+  var cat = GD.categories.find(function(c) { return c.id === ST.catId; });
+  if(!cat) return;
+  var p = getCatProgress(cat);
+  var h = '<div class="hdr">' +
+    '<button class="hdr-back" id="btnBackWorld">← 戻る</button>' +
+    '<div class="hdr-title">' + cat.emoji + ' ' + cat.name + '</div>' +
+    '<div class="hdr-progress">' + p.pct + '%</div></div>' +
+    '<div class="stage-list">';
+  cat.sections.forEach(function(sec) {
+    var secDone = sec.items.filter(function(i) { return getProgress(i.id).cleared; }).length;
+    var secCleared = getProgress(sec.id + '_boss').cleared;
+    var bossUnlocked = secDone >= sec.items.length;
+    h += '<div class="section-card">' +
+      '<div class="section-hdr">' +
+      '<div class="section-icon">' + sec.icon + '</div>' +
+      '<div class="section-name">' + sec.name + '</div>' +
+      '<div class="section-status' + (secCleared ? ' cleared' : '') + '">' +
+      (secCleared ? '✓ クリア' : secDone + '/' + sec.items.length) + '</div></div>' +
+      '<div class="item-list">';
+    sec.items.forEach(function(item) {
+      var done = getProgress(item.id).cleared;
+      h += '<div class="item-row" data-secid="' + sec.id + '" data-itemid="' + item.id + '">' +
+        '<div class="item-icon' + (done ? ' done' : '') + '">' + (done ? '⚔️' : '👺') + '</div>' +
+        '<div class="item-name">' + item.name + '</div><div class="item-arrow">›</div></div>';
+    });
+    if(bossUnlocked) {
+      var bCleared = getProgress(sec.id + '_boss').cleared;
+      h += '<div class="boss-row" data-secboss="' + sec.id + '">' +
+        '<div class="boss-row-icon">' + sec.boss.icon + '</div>' +
+        '<div class="boss-row-name">中ボス: ' + sec.boss.name + '</div>' +
+        '<div class="boss-row-status">' + (bCleared ? '✓ 撃破' : '⚔️ 挑戦') + '</div></div>';
+    }
+    h += '</div></div>';
+  });
+  var catBossUnlocked = cat.sections.every(function(s) { return getProgress(s.id + '_boss').cleared; });
+  if(catBossUnlocked) {
+    var catBossCleared = getProgress(cat.id + '_boss').cleared;
+    h += '<div class="section-card" style="border:2px solid ' + cat.color + '">' +
+      '<div class="boss-row" id="btnCatBoss">' +
+      '<div class="boss-row-icon">👹</div>' +
+      '<div class="boss-row-name" style="color:' + cat.color + '">大分野ボス: ' + cat.boss.name + '</div>' +
+      '<div class="boss-row-status">' + (catBossCleared ? '✓ 撃破' : '⚔️ 挑戦') + '</div></div></div>';
+  }
+  h += '</div>';
+  document.getElementById('s-stage').innerHTML = h;
+  document.getElementById('btnBackWorld').addEventListener('click', function() { gotoScreen('world'); });
+  document.querySelectorAll('.item-row[data-itemid]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      ST.secId = this.dataset.secid; ST.itemId = this.dataset.itemid;
+      gotoScreen('study');
+    });
+  });
+  document.querySelectorAll('.boss-row[data-secboss]').forEach(function(el) {
+    el.addEventListener('click', function() { startBoss(this.dataset.secboss, this.dataset.secboss + '_boss'); });
+  });
+  var catBossBtn = document.getElementById('btnCatBoss');
+  if(catBossBtn) catBossBtn.addEventListener('click', function() { startBoss(null, cat.id + '_boss'); });
+}
+
+function renderStudy() {
+  var cat = GD.categories.find(function(c) { return c.id === ST.catId; });
+  var sec = cat && cat.sections.find(function(s) { return s.id === ST.secId; });
+  var item = sec && sec.items.find(function(i) { return i.id === ST.itemId; });
+  if(!item) return;
+  document.getElementById('s-study').innerHTML =
+    '<div class="hdr"><button class="hdr-back" id="btnBackStage">← 戻る</button>' +
+    '<div class="hdr-title">学習</div></div>' +
+    '<div class="study-body">' +
+    '<div class="study-char">' +
+    '<img src="' + JETT_IMG + '" class="study-jett" alt="Jett">' +
+    '<div class="study-bubble">「まずは知ることからたい。しっかり覚えんね」</div></div>' +
+    '<div class="study-section-title">' + item.name + '</div>' +
+    '<div class="study-section-sub">' + sec.name + ' › ' + cat.name + '</div>' +
+    '<div class="study-content">' + item.content + '</div></div>' +
+    '<div class="study-footer"><button class="btn-full" id="btnToTest">理解した！テストへ ⚔️</button></div>';
+  document.getElementById('btnBackStage').addEventListener('click', function() { gotoScreen('stage'); });
+  document.getElementById('btnToTest').addEventListener('click', function() { startQuiz(); });
+}
+
+function startQuiz() {
+  var cat = GD.categories.find(function(c) { return c.id === ST.catId; });
+  var sec = cat && cat.sections.find(function(s) { return s.id === ST.secId; });
+  var item = sec && sec.items.find(function(i) { return i.id === ST.itemId; });
+  if(!item) return;
+  ST.quiz = {idx: 0, answers: [], questions: item.questions, itemId: item.id, answered: false};
+  gotoScreen('quiz');
+}
+
+function renderQuiz() {
+  var q = ST.quiz;
+  if(!q || !q.questions) return;
+  var current = q.questions[q.idx];
+  var cat = GD.categories.find(function(c) { return c.id === ST.catId; });
+  var sec = cat && cat.sections.find(function(s) { return s.id === ST.secId; });
+  var enemy = (sec && sec.boss) || {icon:'👺', name:'雑魚敵'};
+  var dots = q.questions.map(function(_, i) {
+    return '<div class="quiz-dot' + (i < q.idx ? ' done' : i === q.idx ? ' current' : '') + '"></div>';
+  }).join('');
+  var choices = current.choices.map(function(c, i) {
+    return '<button class="choice-btn" data-idx="' + i + '">' + String.fromCharCode(65+i) + '. ' + c + '</button>';
+  }).join('');
+  document.getElementById('s-quiz').innerHTML =
+    '<div class="hdr"><button class="hdr-back" id="btnBackStudy">← 戻る</button>' +
+    '<div class="hdr-title">テスト ' + (q.idx+1) + '/' + q.questions.length + '</div></div>' +
+    '<div class="quiz-body">' +
+    '<div class="quiz-progress">' + dots + '</div>' +
+    '<div class="quiz-enemy"><div class="quiz-enemy-icon">' + enemy.icon + '</div>' +
+    '<div class="quiz-enemy-name">' + enemy.name + '</div></div>' +
+    '<div class="quiz-bubble">「ここは通さへんで〜！」</div>' +
+    '<div class="quiz-q">' + current.q + '</div>' +
+    '<div class="quiz-choices" id="quizChoices">' + choices + '</div>' +
+    '<div class="quiz-feedback" id="quizFeedback"></div>' +
+    '<button class="quiz-next-btn" id="quizNext">次へ ›</button></div>';
+  document.getElementById('btnBackStudy').addEventListener('click', function() { gotoScreen('study'); });
+  document.querySelectorAll('.choice-btn[data-idx]').forEach(function(btn) {
+    btn.addEventListener('click', function() { checkAnswer(parseInt(this.dataset.idx)); });
+  });
+  document.getElementById('quizNext').addEventListener('click', function() { nextQuestion(); });
+}
+
+function checkAnswer(chosen) {
+  var q = ST.quiz;
+  if(q.answered) return;
+  q.answered = true;
+  var current = q.questions[q.idx];
+  var isCorrect = chosen === current.answer;
+  q.answers.push({chosen: chosen, correct: isCorrect});
+  if(!isCorrect) addWrong(current.q);
+  document.querySelectorAll('.choice-btn').forEach(function(btn, i) {
+    btn.disabled = true;
+    if(i === current.answer) btn.classList.add('show-correct');
+    if(i === chosen && !isCorrect) btn.classList.add('selected-wrong');
+    if(i === chosen && isCorrect) btn.classList.add('selected-correct');
+  });
+  var fb = document.getElementById('quizFeedback');
+  fb.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong');
+  fb.innerHTML = (isCorrect ? '✓ 正解！' : '✗ 不正解') +
+    '<div class="quiz-jett-msg">' + (isCorrect ? '「完璧たい。私が認めてあげる」' : '「惜しかばい…もう一回たい」') + '</div>' +
+    '<div style="font-size:15px;color:#aaa;margin-top:8px;line-height:1.6">' + current.explain + '</div>';
+  document.getElementById('quizNext').style.display = 'block';
+}
+
+function nextQuestion() {
+  var q = ST.quiz;
+  q.idx++;
+  q.answered = false;
+  if(q.idx >= q.questions.length) { showResult(); }
+  else { renderQuiz(); }
+}
+
+function showResult() {
+  var q = ST.quiz;
+  var correct = q.answers.filter(function(a) { return a.correct; }).length;
+  var total = q.answers.length;
+  var pct = Math.round(correct / total * 100);
+  var pass = pct >= 80;
+  if(pass) setCleared(q.itemId);
+  document.getElementById('s-result').innerHTML =
+    '<div class="hdr"><div class="hdr-title">テスト結果</div></div>' +
+    '<div class="result-body">' +
+    '<div class="result-score ' + (pass ? 'pass' : 'fail') + '">' + pct + '%</div>' +
+    '<div class="result-label">' + (pass ? '🎉 合格！' : '😢 不合格') + '</div>' +
+    '<div class="result-sub">' + correct + '/' + total + '問正解（合格ライン: 80%）</div>' +
+    '<div class="result-jett">' + (pass ? '「完璧たい。私が認めてあげる」' : '「…もう一回ばい。諦めるとは早かよ」') + '</div>' +
+    '<div class="result-btns">' +
+    (pass ? '<button id="btnBattle" class="btn btn-primary" style="width:100%;padding:14px">⚔️ バトルへ！</button>'
+           : '<button id="btnRetry" class="btn btn-primary" style="width:100%;padding:14px">🔄 再挑戦</button>') +
+    '<button id="btnBackToStage" style="width:100%;padding:16px;background:var(--card);border:none;color:var(--tx);border-radius:10px;cursor:pointer;font-size:17px">← ステージに戻る</button>' +
+    '</div></div>';
+  gotoScreen('result');
+  var bb = document.getElementById('btnBattle');
+  if(bb) bb.addEventListener('click', function() { gotoScreen('battle'); renderBattle(); });
+  var br = document.getElementById('btnRetry');
+  if(br) br.addEventListener('click', function() { startQuiz(); });
+  document.getElementById('btnBackToStage').addEventListener('click', function() { gotoScreen('stage'); });
+}
+
+function renderBattle() {
+  var cat = GD.categories.find(function(c) { return c.id === ST.catId; });
+  var sec = cat && cat.sections.find(function(s) { return s.id === ST.secId; });
+  var enemy = (sec && sec.boss) || {icon:'👺', name:'雑魚敵'};
+  document.getElementById('s-battle').innerHTML =
+    '<div class="battle-bg"></div>' +
+    '<div class="battle-content">' +
+    '<div id="battleEnemy" style="font-size:80px;margin-bottom:16px">' + enemy.icon + '</div>' +
+    '<div style="font-size:16px;color:#ff9944;margin-bottom:24px">' + enemy.name + '</div>' +
+    '<div id="enemyQ" style="font-size:17px;color:#ffcc88;background:rgba(255,153,68,.15);border:1px solid rgba(255,153,68,.3);padding:14px;border-radius:10px;margin-bottom:32px;line-height:1.6">「う、うそやろ…」</div>' +
+    '<div style="font-size:24px;font-weight:900;color:#fff;margin-bottom:24px">VS</div>' +
+    '<img src="' + JETT_IMG + '" class="battle-jett" alt="Jett">' +
+    '<div id="battleSlash" style="font-size:60px;display:none">⚡</div>' +
+    '<div id="jettQ" class="battle-jett-quote">「片付けたばい。次行くよ」</div>' +
+    '<button id="btnNextStage" style="margin-top:24px;display:none;padding:18px 36px;background:var(--p);color:#000;border:none;border-radius:8px;font-size:17px;font-weight:700;cursor:pointer">次のステージへ ›</button>' +
+    '</div>';
+  setTimeout(function() {
+    var eq = document.getElementById('enemyQ');
+    if(eq) eq.textContent = '「ボスに言いつけたるからな〜！」';
+    var slash = document.getElementById('battleSlash');
+    if(slash) slash.style.display = 'block';
+    setTimeout(function() {
+      if(slash) slash.style.display = 'none';
+      var be = document.getElementById('battleEnemy');
+      if(be) { be.style.transform = 'translateY(80px)'; be.style.opacity = '0'; be.style.transition = 'all .6s'; }
+      setTimeout(function() {
+        var nb = document.getElementById('btnNextStage');
+        if(nb) { nb.style.display = 'block'; nb.addEventListener('click', function() { gotoScreen('stage'); }); }
+      }, 700);
+    }, 600);
+  }, 1200);
+}
+
+function startBoss(secId, bossKey) {
+  ST.secId = secId;
+  ST.bossKey = bossKey;
+  var boss, questions;
+  if(bossKey === 'lassboss') {
+    boss = GD.lassboss;
+    questions = GD.lassboss.questions;
+  } else {
+    var catId = bossKey.replace('_boss','');
+    var cat = GD.categories.find(function(c) { return c.id === catId; });
+    if(cat && !secId) {
+      boss = cat.boss;
+      questions = [];
+      cat.sections.forEach(function(s) { s.items.forEach(function(i) { i.questions.forEach(function(q) { questions.push(q); }); }); });
+      questions = questions.slice(0, 5);
+    } else if(cat && secId) {
+      var sec = cat.sections.find(function(s) { return s.id === secId; });
+      boss = sec && sec.boss;
+      questions = [];
+      if(sec) sec.items.forEach(function(i) { i.questions.forEach(function(q) { questions.push(q); }); });
+    }
+  }
+  ST.bossFight = {boss: boss, bossKey: bossKey, questions: (questions||[]).slice(0,5), idx: 0, bossHP: 100, jettHP: 100, answered: false};
+  gotoScreen('boss');
+}
+
+function renderBoss() {
+  var bf = ST.bossFight;
+  if(!bf || !bf.boss) return;
+  var current = bf.questions[bf.idx];
+  if(!current) { renderBossWin(bf.bossHP <= bf.jettHP); return; }
+  var choices = current.choices.map(function(c, i) {
+    return '<button class="choice-btn" data-bidx="' + i + '">' + String.fromCharCode(65+i) + '. ' + c + '</button>';
+  }).join('');
+  document.getElementById('s-boss').innerHTML =
+    '<div class="boss-hdr">' +
+    '<div class="boss-title">⚡ BOSS BATTLE — ' + (bf.idx+1) + '/' + bf.questions.length + '</div>' +
+    '<div class="hp-bar-wrap"><div class="hp-label" style="color:var(--boss)">敵</div>' +
+    '<div class="hp-bar"><div class="hp-fill boss-hp" id="bossHPFill" style="width:' + bf.bossHP + '%"></div></div>' +
+    '<div style="font-size:15px;color:var(--tx2)">' + bf.bossHP + '</div></div>' +
+    '<div class="hp-bar-wrap"><div class="hp-label" style="color:var(--p)">Jett</div>' +
+    '<div class="hp-bar"><div class="hp-fill jett-hp" id="jettHPFill" style="width:' + bf.jettHP + '%"></div></div>' +
+    '<div style="font-size:15px;color:var(--tx2)">' + bf.jettHP + '</div></div></div>' +
+    '<div class="boss-enemy">' +
+    '<div class="boss-icon">' + bf.boss.icon + '</div>' +
+    '<div class="boss-name">' + bf.boss.name + '</div></div>' +
+    '<div class="boss-quote-bubble" id="bossBubble">' + (bf.idx===0 ? bf.boss.appear : '「まだ終わらへんで！」') + '</div>' +
+    '<div class="jett-boss-bubble" id="jettBossBubble">' + (bf.idx===0 ? (bf.boss.jettAppear||'「行くよ！」') : '「止まらんよ！」') + '</div>' +
+    '<div class="boss-quiz"><div class="boss-q">' + current.q + '</div>' +
+    '<div class="boss-choices" id="bossChoices">' + choices + '</div>' +
+    '<div class="quiz-feedback" id="bossFeedback"></div>' +
+    '<button class="quiz-next-btn" id="bossNext">次の問題 ›</button></div>';
+  document.querySelectorAll('.choice-btn[data-bidx]').forEach(function(btn) {
+    btn.addEventListener('click', function() { bossAnswer(parseInt(this.dataset.bidx)); });
+  });
+  document.getElementById('bossNext').addEventListener('click', function() { nextBossQ(); });
+}
+
+function bossAnswer(chosen) {
+  var bf = ST.bossFight;
+  if(bf.answered) return;
+  bf.answered = true;
+  var current = bf.questions[bf.idx];
+  var isCorrect = chosen === current.answer;
+  document.querySelectorAll('.choice-btn').forEach(function(btn, i) {
+    btn.disabled = true;
+    if(i === current.answer) btn.classList.add('show-correct');
+    if(i === chosen && !isCorrect) btn.classList.add('selected-wrong');
+    if(i === chosen && isCorrect) btn.classList.add('selected-correct');
+  });
+  if(isCorrect) {
+    bf.bossHP = Math.max(0, bf.bossHP - 20);
+    var bh = document.getElementById('bossHPFill');
+    if(bh) bh.style.width = bf.bossHP + '%';
+    var bb = document.getElementById('bossBubble');
+    if(bb) bb.textContent = '「ちょ、ちょっと待ってや…」';
+    var jb = document.getElementById('jettBossBubble');
+    if(jb) jb.textContent = '「止まらんよ。これが私のスピードたい」';
+  } else {
+    bf.jettHP = Math.max(0, bf.jettHP - 20);
+    addWrong(current.q);
+    var jh = document.getElementById('jettHPFill');
+    if(jh) jh.style.width = bf.jettHP + '%';
+    var bb2 = document.getElementById('bossBubble');
+    if(bb2) bb2.textContent = '「やったー！もう一回や！」';
+    var jb2 = document.getElementById('jettBossBubble');
+    if(jb2) jb2.textContent = '「…くっ。まだたい、諦めんよ」';
+  }
+  var fb = document.getElementById('bossFeedback');
+  fb.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong');
+  fb.innerHTML = (isCorrect ? '✓ 正解！' : '✗ 不正解') +
+    '<div style="font-size:15px;color:#aaa;margin-top:6px;line-height:1.6">' + current.explain + '</div>';
+  document.getElementById('bossNext').style.display = 'block';
+}
+
+function nextBossQ() {
+  var bf = ST.bossFight;
+  bf.idx++;
+  bf.answered = false;
+  if(bf.bossHP <= 0 || bf.idx >= bf.questions.length) {
+    var won = bf.bossHP <= bf.jettHP || bf.bossHP === 0;
+    if(won) setCleared(bf.bossKey);
+    ST.bossFight.lastWon = won;
+    renderBossWin(won);
+    gotoScreen('bosswin');
+  } else {
+    renderBoss();
+  }
+}
+
+function renderBossWin(won) {
+  var bf = ST.bossFight;
+  if(won === undefined && bf) won = bf.lastWon;
+  if(won === undefined) won = true;
+  document.getElementById('s-bosswin').innerHTML =
+    '<div class="battle-bg"></div>' +
+    '<div class="bosswin-content">' +
+    '<div class="bosswin-stars">' + (won ? '★★★' : '☆☆☆') + '</div>' +
+    '<div class="bosswin-title">' + (won ? 'BOSS撃破！' : '敗北…') + '</div>' +
+    '<img src="' + JETT_IMG + '" class="bosswin-jett" alt="Jett">' +
+    '<div class="bosswin-quote">' + (won ? ((bf && bf.boss && bf.boss.jettWin) || '「制圧完了たい！」') : '「…もう一回ばい。諦めるとは早かよ」') + '</div>' +
+    (!won ? '<div style="font-size:16px;color:var(--tx2);margin-bottom:18px">再挑戦して敵を倒せ！</div>' : '') +
+    '<button id="bossWinBtn" style="width:100%;max-width:320px;padding:18px;background:var(--p);color:#000;border:none;border-radius:10px;font-size:18px;font-weight:700;cursor:pointer">' +
+    (won ? 'ワールドマップへ ›' : '再挑戦 ↺') + '</button></div>';
+  var btn = document.getElementById('bossWinBtn');
+  if(btn) {
+    btn.addEventListener('click', function() {
+      if(won) { gotoScreen('world'); }
+      else { startBoss(ST.secId, ST.bossKey); }
+    });
+  }
+}
+
+function renderProgress() {
+  var tp = getTotalProgress();
+  var h = '<div class="hdr"><button class="hdr-back" id="btnBackWorldP">← 戻る</button>' +
+    '<div class="hdr-title">📊 進捗・実績</div></div>' +
+    '<div class="prog-body">' +
+    '<div class="prog-header">' +
+    '<img src="' + JETT_IMG + '" class="prog-jett" alt="Jett">' +
+    '<div class="prog-name">JETT 簿記記録</div>' +
+    '<div class="prog-total">全体進捗: ' + tp.done + '/' + tp.total + ' (' + tp.pct + '%)</div></div>' +
+    '<div class="prog-cat-list">';
+  GD.categories.forEach(function(cat) {
+    var p = getCatProgress(cat);
+    h += '<div class="prog-cat">' +
+      '<div class="prog-cat-name">' + cat.emoji + ' ' + cat.name +
+      (getProgress(cat.id+'_boss').cleared ? '<span style="color:var(--p);font-size:13px;margin-left:6px">✓ボス撃破</span>' : '') + '</div>' +
+      '<div class="prog-bar"><div class="prog-bar-fill" style="width:' + p.pct + '%;background:' + cat.color + '"></div></div>' +
+      '<div class="prog-pct">' + p.done + '/' + p.total + ' (' + p.pct + '%)</div></div>';
+  });
+  h += '</div>';
+  if(ST.reviewList.length > 0) {
+    h += '<div class="review-section"><div class="review-title">📝 復習リスト（' + ST.reviewList.length + '問）</div>';
+    ST.reviewList.slice(-5).forEach(function(q) {
+      h += '<div class="review-item">' + q + '</div>';
+    });
+    h += '<button id="btnClearReview" style="background:none;border:1px solid var(--err);color:var(--err);padding:12px 20px;border-radius:6px;cursor:pointer;font-size:15px;margin-top:10px">リストをクリア</button>';
+    h += '</div>';
+  }
+  h += '</div>';
+  document.getElementById('s-progress').innerHTML = h;
+  document.getElementById('btnBackWorldP').addEventListener('click', function() { gotoScreen('world'); });
+  var cr = document.getElementById('btnClearReview');
+  if(cr) cr.addEventListener('click', function() { ST.reviewList = []; saveData(); renderProgress(); });
+}
+
+// 起動
+renderTitle();
+gotoScreen('title');
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('sw.js')
+      .then(function(reg) { console.log('SW registered'); })
+      .catch(function(err) { console.log('SW error:', err); });
+  });
+}
+</script>
+</body>
+</html>

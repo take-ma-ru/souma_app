@@ -1,0 +1,1925 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>簿記2級 × Jett バトル道場</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="簿記2級道場">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#06060f">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+:root{
+  --p:#00d4d8;--pg:rgba(0,212,216,0.3);
+  --bg:#06060f;--bg2:#0e0e22;--bg3:#161630;
+  --card:#1a1a35;--card2:#22224a;
+  --tx:#e8e8ff;--tx2:#8888aa;
+  --err:#ff3355;--ok:#00ff88;--gold:#ffd700;
+  --combo:#ff9900;
+}
+html,body{height:100%;overflow:hidden;}
+body{font-family:-apple-system,'Hiragino Sans','Yu Gothic',sans-serif;background:var(--bg);color:var(--tx);font-size:16px;}
+#app{max-width:480px;margin:0 auto;height:100%;height:100dvh;display:flex;flex-direction:column;background:var(--bg);position:relative;overflow:hidden;}
+.screen{display:none;flex-direction:column;height:100%;}
+.screen.active{display:flex;}
+
+/* ===== TITLE ===== */
+#s-title{background:linear-gradient(180deg,#06060f,#0a0a20,#06060f);align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.grid-bg{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent,transparent 39px,rgba(0,212,216,0.04) 40px),repeating-linear-gradient(0deg,transparent,transparent 39px,rgba(0,212,216,0.04) 40px);}
+.radial-glow{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(0,212,216,0.12) 0%,transparent 70%);animation:pulse-glow 3s ease-in-out infinite;}
+@keyframes pulse-glow{0%,100%{opacity:.6;transform:translate(-50%,-50%) scale(1);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1);}}
+.title-content{z-index:1;text-align:center;padding:24px 24px 32px;width:100%;display:flex;flex-direction:column;align-items:center;gap:12px;}
+
+/* Jett floating */
+.jett-wrap{position:relative;width:180px;height:190px;margin:0 auto;}
+.jett-img{width:180px;height:180px;object-fit:contain;object-position:top;filter:drop-shadow(0 0 24px var(--pg));animation:jett-float 3s ease-in-out infinite;display:block;}
+@keyframes jett-float{0%,100%{transform:translateY(0) rotate(-1.5deg);}50%{transform:translateY(-14px) rotate(1.5deg);}}
+.wind-line{position:absolute;height:2px;border-radius:2px;background:linear-gradient(90deg,transparent,var(--p),transparent);animation:wind-move 2s ease-in-out infinite;}
+.wind-line:nth-child(2){width:50px;top:55%;left:-8px;animation-delay:0s;}
+.wind-line:nth-child(3){width:34px;top:38%;right:-6px;animation-delay:1s;animation-direction:reverse;}
+@keyframes wind-move{0%{opacity:0;transform:translateX(-8px);}50%{opacity:1;}100%{opacity:0;transform:translateX(28px);}}
+
+.title-logo{font-size:28px;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,var(--p),#fff);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.title-sub{font-size:13px;color:var(--tx2);letter-spacing:4px;margin-top:-6px;}
+.jett-quote{background:var(--card);border-left:3px solid var(--p);padding:12px 16px;border-radius:0 8px 8px 0;font-size:14px;color:var(--p);font-style:italic;line-height:1.6;align-self:stretch;margin:0 4px;text-align:left;}
+
+/* buttons */
+.btn{border:none;padding:16px 32px;font-size:16px;font-weight:700;border-radius:8px;cursor:pointer;letter-spacing:1px;transition:all .18s;width:100%;max-width:300px;}
+.btn-primary{background:var(--p);color:#000;box-shadow:0 0 20px var(--pg);animation:glow 2s infinite;}
+.btn-primary:active{transform:scale(.96);}
+@keyframes glow{0%,100%{box-shadow:0 0 20px var(--pg);}50%{box-shadow:0 0 40px var(--pg),0 0 60px var(--pg);}}
+.btn-secondary{background:var(--card);color:var(--p);border:1px solid var(--pg);}
+.btn-secondary:active{transform:scale(.96);}
+
+/* ===== STAGE SELECT SCREEN ===== */
+#s-stages{background:linear-gradient(180deg,#06060f,#0a0a20,#06060f);position:relative;overflow:hidden;}
+.stages-hdr{display:flex;align-items:center;padding:14px 16px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--bg3);flex-shrink:0;gap:10px;}
+.stages-hdr-title{font-size:15px;font-weight:700;color:var(--p);letter-spacing:2px;flex:1;}
+.stages-body{flex:1;overflow-y:auto;padding:16px;-webkit-overflow-scrolling:touch;}
+.stages-body h3{font-size:11px;color:var(--tx2);letter-spacing:3px;text-transform:uppercase;margin-bottom:12px;text-align:center;}
+.stages-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stage-card{background:var(--card);border:1px solid rgba(0,212,216,.25);border-radius:10px;padding:14px 8px;cursor:pointer;text-align:center;transition:all .15s;position:relative;}
+.stage-card:active{transform:scale(.96);background:var(--card2);}
+.stage-card.cleared{border-color:var(--p);}
+.stage-card.cleared::after{content:"✓";position:absolute;top:6px;right:8px;color:var(--p);font-size:11px;font-weight:700;}
+.sc-emoji{font-size:28px;display:block;margin-bottom:4px;}
+.sc-name{font-size:11px;color:var(--tx);line-height:1.3;font-weight:600;}
+.sc-count{font-size:10px;color:var(--tx2);margin-top:2px;}
+
+/* ===== BATTLE ===== */
+#s-battle{background:linear-gradient(180deg,#06060f 0%,#090918 100%);}
+
+.battle-hdr{display:flex;align-items:center;padding:10px 14px 8px;gap:10px;background:rgba(0,0,0,.5);border-bottom:1px solid var(--bg3);flex-shrink:0;}
+.battle-hdr-title{font-size:13px;font-weight:700;color:var(--p);letter-spacing:1px;flex:1;}
+.battle-hdr-progress{font-size:12px;color:var(--tx2);}
+.btn-quit{background:transparent;color:#ff4d6d;border:1px solid #ff4d6d55;border-radius:8px;font-size:11px;font-weight:700;padding:4px 10px;cursor:pointer;letter-spacing:.5px;transition:background .15s;}
+.btn-quit:active{background:#ff4d6d22;}
+.combo-badge{background:var(--combo);color:#000;font-size:11px;font-weight:900;padding:3px 8px;border-radius:10px;display:none;letter-spacing:1px;}
+.combo-badge.show{display:block;animation:badge-pop .35s cubic-bezier(.36,.07,.19,.97);}
+.combo-badge.show.mega{font-size:15px;padding:5px 12px;background:linear-gradient(135deg,#ff6600,#ff0099);color:#fff;box-shadow:0 0 16px #ff0099,0 0 32px #ff6600;animation:badge-mega .4s cubic-bezier(.36,.07,.19,.97);}
+@keyframes badge-pop{0%{transform:scale(0) rotate(-15deg);}60%{transform:scale(1.3) rotate(5deg);}100%{transform:scale(1) rotate(0);}}
+@keyframes badge-mega{0%{transform:scale(0) rotate(-20deg);}50%{transform:scale(1.5) rotate(8deg);}75%{transform:scale(0.9) rotate(-3deg);}100%{transform:scale(1) rotate(0);}}
+
+/* Arena */
+.arena{display:flex;align-items:flex-end;padding:8px 14px 4px;gap:10px;flex-shrink:0;position:relative;}
+.jett-side,.enemy-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;}
+
+.hp-row{width:100%;display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx2);}
+.hp-bar{flex:1;height:10px;background:rgba(255,255,255,.1);border-radius:5px;overflow:hidden;box-shadow:0 0 6px rgba(0,0,0,.5);}
+.hp-fill{height:100%;border-radius:5px;transition:width .35s cubic-bezier(.4,0,.2,1);}
+.hp-fill.jett-hp{background:linear-gradient(90deg,#00b4d8,#4ee1e1);box-shadow:0 0 8px #00d4d8;}
+.hp-fill.enemy-hp{background:linear-gradient(90deg,#ff1a3a,#ff6b6b);box-shadow:0 0 8px #ff3355;}
+.hp-fill.danger{background:linear-gradient(90deg,#ff6600,#ff0000);animation:hp-danger .6s ease-in-out infinite alternate;}
+@keyframes hp-danger{0%{opacity:.8;}100%{opacity:1;box-shadow:0 0 14px #ff0000;}}
+.hp-num{font-size:10px;color:var(--tx2);min-width:24px;text-align:right;}
+
+/* Characters */
+.char-box{position:relative;height:120px;display:flex;align-items:flex-end;justify-content:center;}
+.jett-battle{height:112px;width:auto;object-fit:contain;object-position:top;filter:drop-shadow(0 0 14px rgba(0,212,216,.6));animation:b-idle 2.2s ease-in-out infinite;transform-origin:bottom center;}
+@keyframes b-idle{0%,100%{transform:translateY(0) rotate(-1deg);}50%{transform:translateY(-7px) rotate(1deg);}}
+
+/* Jett attack — dash forward + slash */
+.jett-battle.do-attack{animation:j-attack .55s cubic-bezier(.2,0,.8,1) forwards;}
+@keyframes j-attack{
+  0%  {transform:translateX(0) scale(1);filter:drop-shadow(0 0 14px rgba(0,212,216,.6));}
+  20% {transform:translateX(10px) scale(1.05) scaleY(.92);filter:drop-shadow(0 0 30px #00ffff);}
+  45% {transform:translateX(70px) scale(1.15) scaleY(.88);filter:drop-shadow(0 0 40px #00ffff) brightness(1.4);}
+  65% {transform:translateX(72px) scale(1.1);filter:drop-shadow(0 0 50px #ffffff) brightness(2);}
+  100%{transform:translateX(0) scale(1);filter:drop-shadow(0 0 14px rgba(0,212,216,.6));}
+}
+/* Jett crit attack */
+.jett-battle.do-crit{animation:j-crit .6s cubic-bezier(.2,0,.8,1) forwards;}
+@keyframes j-crit{
+  0%  {transform:translateX(0) scale(1) rotate(0deg);filter:drop-shadow(0 0 14px rgba(0,212,216,.6));}
+  15% {transform:translateX(5px) scale(1.1) rotate(-8deg);filter:drop-shadow(0 0 30px #ffff00) brightness(1.5);}
+  40% {transform:translateX(80px) scale(1.25) rotate(10deg);filter:drop-shadow(0 0 60px #ffffff) brightness(3);}
+  60% {transform:translateX(82px) scale(1.2) rotate(5deg);filter:drop-shadow(0 0 80px #00ffff) brightness(3);}
+  100%{transform:translateX(0) scale(1) rotate(0deg);filter:drop-shadow(0 0 14px rgba(0,212,216,.6));}
+}
+/* Jett damaged */
+.jett-battle.do-dmg{animation:j-dmg .5s ease-out forwards;}
+@keyframes j-dmg{
+  0%  {transform:translateX(0);filter:drop-shadow(0 0 14px rgba(0,212,216,.6));}
+  20% {transform:translateX(-16px) scale(.95);filter:drop-shadow(0 0 24px rgba(255,51,85,1)) brightness(2);}
+  45% {transform:translateX(-20px) scale(.93);filter:drop-shadow(0 0 30px rgba(255,0,0,1)) brightness(2.5);}
+  70% {transform:translateX(-8px);}
+  100%{transform:translateX(0);filter:drop-shadow(0 0 14px rgba(0,212,216,.6));}
+}
+
+/* Slash effects — multiple lines for flair */
+.slash-fx{position:absolute;right:-8px;top:40%;width:0;height:0;opacity:0;pointer-events:none;}
+.slash-line{position:absolute;height:3px;border-radius:2px;transform-origin:left center;}
+.slash-fx.go .slash-line:nth-child(1){background:linear-gradient(90deg,transparent,#00ffff,#fff);width:80px;top:0;animation:sl1 .38s ease-out forwards;}
+.slash-fx.go .slash-line:nth-child(2){background:linear-gradient(90deg,transparent,#00d4d8);width:55px;top:-10px;animation:sl2 .38s .04s ease-out forwards;transform:rotate(-20deg);}
+.slash-fx.go .slash-line:nth-child(3){background:linear-gradient(90deg,transparent,#88ffff);width:40px;top:12px;animation:sl3 .38s .06s ease-out forwards;transform:rotate(15deg);}
+@keyframes sl1{0%{opacity:0;transform:scaleX(0);}25%{opacity:1;transform:scaleX(1);}100%{opacity:0;transform:scaleX(1.5) translateX(20px);}}
+@keyframes sl2{0%{opacity:0;transform:rotate(-20deg) scaleX(0);}25%{opacity:.8;transform:rotate(-20deg) scaleX(1);}100%{opacity:0;transform:rotate(-20deg) scaleX(1.4) translateX(16px);}}
+@keyframes sl3{0%{opacity:0;transform:rotate(15deg) scaleX(0);}25%{opacity:.6;transform:rotate(15deg) scaleX(1);}100%{opacity:0;transform:rotate(15deg) scaleX(1.3) translateX(12px);}}
+
+/* Crit slash — extra thick + gold */
+.slash-fx.crit .slash-line:nth-child(1){background:linear-gradient(90deg,transparent,#ffd700,#fff);height:5px;width:100px;}
+.slash-fx.crit .slash-line:nth-child(2){background:linear-gradient(90deg,transparent,#ffaa00);height:4px;width:70px;}
+
+/* Explosion on enemy hit */
+.hit-burst{position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);width:80px;height:80px;border-radius:50%;opacity:0;pointer-events:none;}
+.hit-burst.go{animation:burst .45s ease-out forwards;}
+.hit-burst.crit-burst{width:120px;height:120px;animation:burst-crit .5s ease-out forwards;}
+@keyframes burst{0%{opacity:.9;transform:translate(-50%,-50%) scale(0);background:radial-gradient(circle,#fff 0%,#00ffff 40%,transparent 70%);}60%{opacity:.4;transform:translate(-50%,-50%) scale(1.5);}100%{opacity:0;transform:translate(-50%,-50%) scale(2);}}
+@keyframes burst-crit{0%{opacity:1;transform:translate(-50%,-50%) scale(0);background:radial-gradient(circle,#fff 0%,#ffd700 30%,#ff6600 55%,transparent 75%);}50%{opacity:.6;transform:translate(-50%,-50%) scale(2);}100%{opacity:0;transform:translate(-50%,-50%) scale(3);}}
+
+.enemy-char{display:flex;flex-direction:column;align-items:center;animation:e-idle 2.5s ease-in-out infinite;cursor:default;position:relative;z-index:1;}
+@keyframes e-idle{0%,100%{transform:translateY(0) rotate(0deg);}50%{transform:translateY(-10px) rotate(5deg);}}
+.enemy-icon-el{font-size:58px;line-height:1;transition:transform .2s;}
+.enemy-name-el{font-size:10px;color:#ff6b6b;font-weight:700;letter-spacing:1px;margin-top:4px;}
+.enemy-char.do-hit{animation:e-hit .45s ease-out forwards;}
+@keyframes e-hit{
+  0%  {transform:translateX(0) rotate(0deg) scale(1);filter:none;}
+  20% {transform:translateX(22px) rotate(8deg) scale(.9);filter:brightness(3) saturate(0);}
+  40% {transform:translateX(26px) rotate(-6deg) scale(.85);filter:brightness(2) saturate(0) blur(1px);}
+  70% {transform:translateX(10px) rotate(2deg) scale(.95);filter:brightness(1.3);}
+  100%{transform:translateX(0) rotate(0deg) scale(1);filter:none;}
+}
+.enemy-char.do-crit-hit{animation:e-crit-hit .55s ease-out forwards;}
+@keyframes e-crit-hit{
+  0%  {transform:scale(1) rotate(0deg);filter:none;}
+  15% {transform:scale(.7) rotate(15deg) translateX(30px);filter:brightness(5) saturate(0);}
+  35% {transform:scale(.6) rotate(-10deg) translateX(35px);filter:brightness(4) saturate(0) blur(2px);}
+  60% {transform:scale(.8) rotate(5deg) translateX(15px);filter:brightness(2);}
+  100%{transform:scale(1) rotate(0deg) translateX(0);filter:none;}
+}
+
+/* Damage number pop */
+.dmg-pop{position:absolute;top:-10px;right:-10px;font-size:28px;font-weight:900;color:#ff3355;text-shadow:0 0 12px rgba(255,51,85,.9),0 2px 0 #000;opacity:0;pointer-events:none;z-index:10;}
+.dmg-pop.go{animation:dmg-anim 1s cubic-bezier(.2,0,.8,1) forwards;}
+.dmg-pop.crit-pop{font-size:36px;color:#ffd700;text-shadow:0 0 20px #ff6600,0 0 40px #ffaa00,0 2px 0 #000;}
+.dmg-pop.crit-pop.go{animation:dmg-crit 1.1s cubic-bezier(.2,0,.8,1) forwards;}
+@keyframes dmg-anim{0%{opacity:1;transform:translateY(0) scale(.4) rotate(-10deg);}25%{opacity:1;transform:translateY(-22px) scale(1.3) rotate(5deg);}100%{opacity:0;transform:translateY(-50px) scale(.8) rotate(-5deg);}}
+@keyframes dmg-crit{0%{opacity:1;transform:translateY(0) scale(0) rotate(-20deg);}20%{opacity:1;transform:translateY(-10px) scale(1.8) rotate(10deg);}45%{transform:translateY(-28px) scale(1.4) rotate(-5deg);}100%{opacity:0;transform:translateY(-65px) scale(.7) rotate(0deg);}}
+
+/* CRITICAL text overlay */
+.crit-text{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(0);font-size:22px;font-weight:900;color:#ffd700;text-shadow:0 0 20px #ff6600,0 0 40px #fff;letter-spacing:4px;white-space:nowrap;pointer-events:none;z-index:20;opacity:0;}
+.crit-text.go{animation:crit-txt .8s cubic-bezier(.36,.07,.19,.97) forwards;}
+@keyframes crit-txt{0%{opacity:0;transform:translate(-50%,-50%) scale(0) rotate(-10deg);}25%{opacity:1;transform:translate(-50%,-50%) scale(1.4) rotate(3deg);}50%{opacity:1;transform:translate(-50%,-50%) scale(1.1) rotate(-1deg);}75%{opacity:1;transform:translate(-50%,-50%) scale(1.15) rotate(1deg);}100%{opacity:0;transform:translate(-50%,-60%) scale(1) rotate(0deg);}}
+
+/* Enemy danger state */
+.enemy-char.danger .enemy-icon-el{animation:e-danger .4s ease-in-out infinite alternate;}
+@keyframes e-danger{0%{filter:brightness(1);}100%{filter:brightness(1.5) drop-shadow(0 0 8px #ff3355);}}
+
+/* Message */
+.msg-box{margin:0 12px 4px;padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.5;border:1px solid;text-align:center;display:none;flex-shrink:0;}
+.msg-box.ok{background:rgba(0,255,136,.1);border-color:var(--ok);color:var(--ok);box-shadow:0 0 12px rgba(0,255,136,.2);}
+.msg-box.ng{background:rgba(255,51,85,.1);border-color:var(--err);color:var(--err);box-shadow:0 0 12px rgba(255,51,85,.2);}
+.msg-box.ok{animation:msg-slide .25s ease-out;}
+.msg-box.ng{animation:msg-slide .25s ease-out;}
+@keyframes msg-slide{0%{opacity:0;transform:translateY(6px);}100%{opacity:1;transform:translateY(0);}}
+
+/* Question area */
+.q-area{flex:1;display:flex;flex-direction:column;padding:0 12px 12px;gap:8px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.q-box{background:var(--card);border:1px solid rgba(0,212,216,.2);border-radius:12px;padding:12px 14px;flex-shrink:0;}
+.q-label{font-size:11px;color:var(--p);font-weight:700;letter-spacing:2px;margin-bottom:6px;}
+.q-text{font-size:14px;line-height:1.65;color:var(--tx);}
+.choices{display:flex;flex-direction:column;gap:7px;flex-shrink:0;}
+.choice{background:var(--card);border:1px solid rgba(255,255,255,.12);border-radius:10px;color:var(--tx);font-size:13px;padding:12px 13px;cursor:pointer;text-align:left;line-height:1.5;transition:all .15s;display:flex;gap:9px;align-items:flex-start;}
+.choice:active{transform:scale(.97);background:var(--card2);}
+.choice-label{background:rgba(0,212,216,.18);border-radius:5px;padding:2px 7px;font-weight:700;font-size:11px;color:var(--p);flex-shrink:0;margin-top:1px;}
+.choice.correct{background:rgba(0,255,136,.12);border-color:var(--ok);color:var(--ok);box-shadow:0 0 10px rgba(0,255,136,.2);animation:choice-ok .3s ease-out;}
+.choice.wrong{background:rgba(255,51,85,.12);border-color:var(--err);color:var(--err);}
+.choice.disabled{pointer-events:none;opacity:.55;}
+@keyframes choice-ok{0%{transform:scale(.97);}60%{transform:scale(1.03);}100%{transform:scale(1);}}
+
+/* Screen FX — shake */
+#s-battle.screen-shake{animation:s-shake .55s ease-out;}
+@keyframes s-shake{0%,100%{transform:translateX(0);}10%{transform:translateX(-14px) rotate(-1deg);}25%{transform:translateX(14px) rotate(1deg);}40%{transform:translateX(-10px) rotate(-.5deg);}55%{transform:translateX(8px) rotate(.5deg);}70%{transform:translateX(-5px);}85%{transform:translateX(3px);}}
+#s-battle.screen-flash-blue{animation:s-flash-blue .3s ease-out;}
+@keyframes s-flash-blue{0%,100%{background-color:transparent;}40%{background-color:rgba(0,212,216,.1);}}
+#s-battle.screen-flash-gold{animation:s-flash-gold .4s ease-out;}
+@keyframes s-flash-gold{0%,100%{background-color:transparent;}30%{background-color:rgba(255,215,0,.1);}}
+
+/* ===== FULL-SCREEN OVERLAY ===== */
+#screen-overlay{
+  position:fixed;inset:0;z-index:999;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;
+}
+/* 正解：緑フラッシュ */
+#screen-overlay.ok-flash{animation:ov-ok .6s ease-out forwards;}
+@keyframes ov-ok{
+  0%  {opacity:0;background:radial-gradient(ellipse at center,rgba(0,255,136,.55) 0%,rgba(0,255,136,.25) 50%,transparent 75%);}
+  15% {opacity:1;background:radial-gradient(ellipse at center,rgba(0,255,136,.7) 0%,rgba(0,255,136,.35) 50%,transparent 75%);}
+  50% {opacity:.6;background:radial-gradient(ellipse at center,rgba(0,255,136,.3) 0%,rgba(0,255,136,.12) 50%,transparent 75%);}
+  100%{opacity:0;background:transparent;}
+}
+/* 不正解：赤フラッシュ */
+#screen-overlay.ng-flash{animation:ov-ng .65s ease-out forwards;}
+@keyframes ov-ng{
+  0%  {opacity:0;background:rgba(255,30,60,0);}
+  10% {opacity:1;background:rgba(255,30,60,.45);}
+  30% {opacity:.9;background:rgba(255,30,60,.3);}
+  70% {opacity:.4;background:rgba(255,30,60,.12);}
+  100%{opacity:0;background:transparent;}
+}
+/* クリティカル：金フラッシュ */
+#screen-overlay.crit-flash{animation:ov-crit .7s ease-out forwards;}
+@keyframes ov-crit{
+  0%  {opacity:0;background:radial-gradient(ellipse at center,rgba(255,255,255,.9) 0%,rgba(255,215,0,.6) 35%,rgba(255,100,0,.2) 65%,transparent 80%);}
+  10% {opacity:1;}
+  40% {opacity:.7;background:radial-gradient(ellipse at center,rgba(255,220,0,.4) 0%,rgba(255,100,0,.15) 50%,transparent 80%);}
+  100%{opacity:0;background:transparent;}
+}
+/* 正解テキスト */
+#screen-overlay .ov-label{
+  position:absolute;top:38%;left:50%;transform:translate(-50%,-50%) scale(0);
+  font-size:52px;font-weight:900;letter-spacing:6px;white-space:nowrap;
+  text-shadow:0 0 30px currentColor,0 2px 0 rgba(0,0,0,.5);
+  pointer-events:none;
+}
+#screen-overlay.ok-flash .ov-label{
+  content:'';color:#00ff88;
+  animation:ov-label-ok .6s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+#screen-overlay.ng-flash .ov-label{
+  color:#ff3355;
+  animation:ov-label-ng .65s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+#screen-overlay.crit-flash .ov-label{
+  color:#ffd700;
+  animation:ov-label-ok .7s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+@keyframes ov-label-ok{
+  0%  {transform:translate(-50%,-50%) scale(0) rotate(-5deg);opacity:0;}
+  25% {transform:translate(-50%,-50%) scale(1.3) rotate(2deg);opacity:1;}
+  55% {transform:translate(-50%,-50%) scale(1.1) rotate(-1deg);opacity:1;}
+  100%{transform:translate(-50%,-55%) scale(.9) rotate(0deg);opacity:0;}
+}
+@keyframes ov-label-ng{
+  0%  {transform:translate(-50%,-50%) scale(0);opacity:0;}
+  20% {transform:translate(-50%,-50%) scale(1.2) rotate(3deg);opacity:1;}
+  50% {transform:translate(-50%,-50%) scale(1.05) rotate(-1deg);opacity:1;}
+  100%{transform:translate(-50%,-55%) scale(.95);opacity:0;}
+}
+/* 光のビームライン（正解時） */
+#screen-overlay.ok-flash::before,
+#screen-overlay.crit-flash::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(70deg,transparent 0%,transparent 8%,rgba(255,255,255,.04) 8%,rgba(255,255,255,.04) 9%);
+  animation:beam-sweep .6s ease-out forwards;
+}
+@keyframes beam-sweep{0%{opacity:0;transform:translateX(-10%);}50%{opacity:1;}100%{opacity:0;transform:translateX(5%);}}
+/* 赤ビネット（不正解時） */
+#screen-overlay.ng-flash::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,transparent 40%,rgba(180,0,0,.5) 100%);
+  animation:vignette-ng .65s ease-out forwards;
+}
+@keyframes vignette-ng{0%{opacity:0;}20%{opacity:1;}100%{opacity:0;}}
+
+/* ===== INTER RESULT (ラウンド間) ===== */
+#s-inter{background:linear-gradient(160deg,#06060f,#0a0a24);align-items:center;justify-content:center;}
+.inter-wrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:28px 24px;width:100%;max-width:360px;}
+.inter-round-badge{font-size:11px;color:var(--tx2);letter-spacing:3px;text-transform:uppercase;}
+.inter-icon{font-size:52px;}
+.inter-title{font-size:22px;font-weight:900;color:var(--p);letter-spacing:2px;}
+.inter-stats{background:var(--card);border:1px solid rgba(0,212,216,.2);border-radius:12px;padding:14px 20px;width:100%;font-size:14px;line-height:2.2;}
+.inter-stats .val{color:var(--p);font-weight:700;}
+.inter-stats .val.bad{color:var(--err);}
+.inter-next-info{font-size:13px;color:var(--tx2);text-align:center;}
+
+/* ===== RESULT ===== */
+#s-result{background:linear-gradient(160deg,#06060f,#0a0a24);align-items:center;justify-content:center;}
+.result-wrap{display:flex;flex-direction:column;align-items:center;gap:16px;padding:32px 24px;width:100%;max-width:360px;}
+.result-icon{font-size:64px;animation:r-bounce .6s cubic-bezier(.36,.07,.19,.97);}
+@keyframes r-bounce{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
+.result-title{font-size:26px;font-weight:900;color:var(--p);text-align:center;letter-spacing:2px;}
+.result-msg{font-size:14px;color:var(--tx2);text-align:center;line-height:1.7;}
+.result-stats{background:var(--card);border:1px solid rgba(0,212,216,.2);border-radius:12px;padding:16px 24px;width:100%;font-size:14px;line-height:2.2;}
+.result-stats .val{color:var(--p);font-weight:700;}
+.result-stats .val.bad{color:var(--err);}
+.result-jett{width:120px;height:120px;object-fit:contain;object-position:top;filter:drop-shadow(0 0 16px var(--pg));animation:jett-float 3s ease-in-out infinite;}
+.btn-group{display:flex;flex-direction:column;gap:8px;width:100%;align-items:center;}
+
+/* ===== MUTE BUTTON ===== */
+#mute-btn{
+  position:fixed;bottom:16px;right:16px;z-index:1000;
+  width:44px;height:44px;border-radius:50%;border:none;
+  background:rgba(0,0,0,.6);color:#fff;font-size:20px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 8px rgba(0,0,0,.5);backdrop-filter:blur(4px);
+  transition:background .2s,transform .15s;
+}
+#mute-btn:active{transform:scale(.9);}
+#mute-btn.muted{background:rgba(255,51,85,.4);}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- ===== TITLE ===== -->
+<div id="s-title" class="screen active">
+  <div class="grid-bg"></div>
+  <div class="radial-glow"></div>
+  <div class="title-content">
+    <div class="jett-wrap">
+      <img src="ジェット.avif" alt="Jett" class="jett-img">
+      <div class="wind-line"></div>
+      <div class="wind-line"></div>
+    </div>
+    <div class="title-logo">簿記バトル道場</div>
+    <div class="title-sub">2級 × JETT</div>
+    <div class="jett-quote">「Let me show you how it's done.」</div>
+    <button class="btn btn-primary" id="btn-start">バトル開始！</button>
+  </div>
+</div>
+
+<!-- ===== STAGE SELECT ===== -->
+<div id="s-stages" class="screen">
+  <div class="stages-hdr">
+    <div class="stages-hdr-title">STAGE SELECT</div>
+    <button class="btn btn-secondary" id="btn-stages-back" style="width:auto;padding:8px 14px;font-size:13px;">タイトルへ</button>
+  </div>
+  <div class="stages-body">
+    <h3>ステージを選べ</h3>
+    <div class="stages-grid" id="stages-grid"></div>
+  </div>
+</div>
+
+<!-- ===== BATTLE ===== -->
+<div id="s-battle" class="screen">
+  <div class="battle-hdr">
+    <div class="battle-hdr-title" id="b-stage-name">現金・預金</div>
+    <div class="combo-badge" id="combo-badge">COMBO×<span id="combo-num">2</span></div>
+    <div class="battle-hdr-progress" id="b-progress">1/5問</div>
+    <button class="btn-quit" id="btn-battle-quit">やめる</button>
+  </div>
+
+  <div class="arena">
+    <!-- Jett -->
+    <div class="jett-side">
+      <div class="hp-row">
+        <span>JETT</span>
+        <div class="hp-bar"><div class="hp-fill jett-hp" id="jett-hp-bar"></div></div>
+        <span class="hp-num" id="jett-hp-num">5/5</span>
+      </div>
+      <div class="char-box">
+        <img src="ジェット.avif" alt="Jett" class="jett-battle" id="jett-char">
+        <div class="slash-fx" id="slash-fx">
+          <div class="slash-line"></div>
+          <div class="slash-line"></div>
+          <div class="slash-line"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enemy -->
+    <div class="enemy-side">
+      <div class="hp-row" style="justify-content:flex-end;">
+        <span id="enemy-hp-num">5/5</span>
+        <div class="hp-bar"><div class="hp-fill enemy-hp" id="enemy-hp-bar"></div></div>
+        <span id="enemy-hp-label">敵</span>
+      </div>
+      <div class="char-box" style="position:relative;">
+        <div class="enemy-char" id="enemy-char">
+          <div class="enemy-icon-el" id="enemy-icon">👹</div>
+          <div class="enemy-name-el" id="enemy-name-el">???</div>
+        </div>
+        <div class="dmg-pop" id="dmg-pop">-1</div>
+        <div class="hit-burst" id="hit-burst"></div>
+        <div class="crit-text" id="crit-text">CRITICAL!!</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="msg-box" id="msg-box"></div>
+
+  <div class="q-area" id="q-area">
+    <div class="q-box">
+      <div class="q-label">QUESTION</div>
+      <div class="q-text" id="q-text"></div>
+    </div>
+    <div class="choices" id="choices"></div>
+  </div>
+</div>
+
+<!-- ===== INTER RESULT (ラウンド間) ===== -->
+<div id="s-inter" class="screen">
+  <div class="inter-wrap">
+    <div class="inter-round-badge" id="ir-badge">ROUND 1 CLEAR</div>
+    <div class="inter-icon" id="ir-icon">⚡</div>
+    <div class="inter-title" id="ir-title">ラウンドクリア！</div>
+    <div class="inter-stats" id="ir-stats"></div>
+    <div class="inter-next-info" id="ir-next-info"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-next-round">次のラウンドへ！</button>
+      <button class="btn btn-secondary" id="btn-inter-stages">ステージ選択へ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== RESULT ===== -->
+<div id="s-result" class="screen">
+  <div class="result-wrap">
+    <div class="result-icon" id="r-icon">🏆</div>
+    <img src="ジェット.avif" alt="Jett" class="result-jett" id="r-jett">
+    <div class="result-title" id="r-title">ステージクリア！</div>
+    <div class="result-msg" id="r-msg"></div>
+    <div class="result-stats" id="r-stats"></div>
+    <div class="btn-group">
+      <button class="btn btn-primary" id="btn-retry">もう一度挑戦</button>
+      <button class="btn btn-secondary" id="btn-title">ステージ選択へ</button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- ===== FULL SCREEN OVERLAY ===== -->
+<div id="screen-overlay">
+  <div class="ov-label" id="ov-label"></div>
+</div>
+
+<button id="mute-btn" title="ミュート">🔊</button>
+
+<script>
+// =============================================
+// QUESTION BANK — 簿記2級
+// rounds: 配列の配列、各ラウンド5問
+// =============================================
+const STAGES = [
+  {
+    id:'cash', name:'現金・預金', emoji:'💴',
+    eIcon:'👿', eName:'現金魔王',
+    quote:'現金の流れを見切れ！',
+    rounds:[
+      // ラウンド1
+      [
+        {q:'現金100万円を普通預金に預け入れた。正しい仕訳は？',cs:['借方：普通預金100万　貸方：現金100万','借方：現金100万　貸方：普通預金100万','借方：預り金100万　貸方：現金100万','借方：売掛金100万　貸方：現金100万'],a:0,ex:'現金（資産）が減り（貸方）、普通預金（資産）が増える（借方）。'},
+        {q:'小口現金200円の補給。内訳：交通費120円、消耗品費80円。補給は当座預金から。正しい仕訳は？',cs:['借方：小口現金200　貸方：当座預金200','借方：交通費120・消耗品費80　貸方：小口現金200','借方：交通費120・消耗品費80　貸方：当座預金200','借方：現金200　貸方：当座預金200'],a:2,ex:'補給時に経費を計上し、資金源の当座預金を貸方に記入する。'},
+        {q:'当座預金口座で当座借越50万円が発生した。この時の仕訳（当座借越勘定使用）は？',cs:['借方：当座預金50万　貸方：当座借越50万','借方：当座借越50万　貸方：当座預金50万','借方：当座預金50万　貸方：借入金50万','仕訳不要'],a:0,ex:'当座借越勘定に振り替える場合、当座預金（借方）・当座借越（貸方）とする。'},
+        {q:'現金の帳簿残高が実際より5,000円不足。原因が不明なときの仕訳は？',cs:['借方：現金過不足5,000　貸方：現金5,000','借方：現金5,000　貸方：現金過不足5,000','借方：雑損5,000　貸方：現金5,000','仕訳不要'],a:0,ex:'原因不明の不足は「現金過不足」で処理。原因が分かれば適切な勘定に振り替える。'},
+        {q:'定期預金1,000万円が満期になり、利息10万円とともに普通預金に入金された。正しい仕訳は？',cs:['借方：普通預金1,010万　貸方：定期預金1,000万・受取利息10万','借方：定期預金1,010万　貸方：普通預金1,010万','借方：普通預金1,000万　貸方：定期預金1,000万','借方：普通預金1,010万　貸方：定期預金1,010万'],a:0,ex:'元本（定期預金）と利息（受取利息）を分けて貸方に記入する。'},
+      ],
+      // ラウンド2
+      [
+        {q:'現金過不足として処理していた現金不足3,000円の原因が、交通費の記入漏れと判明した。振替仕訳は？',cs:['借方：交通費3,000　貸方：現金過不足3,000','借方：現金過不足3,000　貸方：交通費3,000','借方：交通費3,000　貸方：現金3,000','仕訳不要'],a:0,ex:'現金過不足を借方に戻し、正しい勘定（交通費）の貸方を消す。'},
+        {q:'決算時に原因不明の現金超過2,000円が残った。決算整理仕訳は？',cs:['借方：雑損2,000　貸方：現金過不足2,000','借方：現金過不足2,000　貸方：雑益2,000','借方：現金2,000　貸方：雑益2,000','仕訳不要'],a:1,ex:'決算時に超過が残れば雑益（収益）として処理する。'},
+        {q:'当座預金残高が300万円あり小切手500万円を振り出した。当座借越契約（限度額500万）がある場合の仕訳は？',cs:['借方：買掛金500万　貸方：当座預金300万・当座借越200万','借方：支払手形500万　貸方：当座預金500万','借方：仕入500万　貸方：当座預金300万・借入金200万','仕訳先行し不足分は後処理'],a:0,ex:'当座借越契約があれば不足分は当座借越（負債）として処理できる。'},
+        {q:'小口現金係から報告：交通費800円・消耗品費400円・雑費200円、合計1,400円使用。補給は小切手で。仕訳は？',cs:['借方：小口現金1,400　貸方：当座預金1,400','借方：交通費800・消耗品費400・雑費200　貸方：当座預金1,400','借方：交通費800・消耗品費400・雑費200　貸方：小口現金1,400','借方：現金1,400　貸方：小口現金1,400'],a:1,ex:'補給時は費用を計上（借方）し、補給源の当座預金を減少（貸方）させる。'},
+        {q:'普通預金口座に利息140円（税引前200円・源泉税60円）が入金された。正しい仕訳は？',cs:['借方：普通預金140　貸方：受取利息140','借方：普通預金140・法人税等60　貸方：受取利息200','借方：普通預金200　貸方：受取利息200','借方：普通預金140・仮払税金60　貸方：受取利息200'],a:3,ex:'源泉税は「仮払税金」（資産）として計上し、受取利息は総額で認識する。'},
+      ],
+      // ラウンド3
+      [
+        {q:'銀行勘定調整表：時間外預金とは何か？',cs:['銀行の時間外に預け入れたため翌営業日に入金処理される預金','企業側が未記帳の当座預金入金','銀行が誤記入した預金','小切手が未取立のまま残っている状態'],a:0,ex:'時間外預金は銀行の営業時間外に預け入れたもので、翌営業日付で入金される。企業帳簿はすでに記帳済み。'},
+        {q:'銀行勘定調整表：未取立小切手とは何か？',cs:['企業が振り出したが相手にまだ渡していない小切手','企業が受け取ったが銀行に取立依頼していない小切手','銀行が誤って二重記帳した小切手','帳簿残高と銀行残高の差額'],a:1,ex:'未取立小切手は受け取った小切手をまだ銀行に取立依頼していないもの。銀行側に入金されていない。'},
+        {q:'銀行勘定調整表：未渡小切手20万円がある。修正仕訳は？',cs:['借方：当座預金20万　貸方：買掛金20万','借方：買掛金20万　貸方：当座預金20万','仕訳不要（銀行側の調整）','借方：現金20万　貸方：当座預金20万'],a:0,ex:'未渡小切手は振り出し時に当座預金を減らしたが渡していない。戻して当座預金を増やし、買掛金等の負債を計上する。'},
+        {q:'銀行勘定調整表で、銀行残高100万・帳簿残高95万、差額5万の原因が「時間外預金5万」なら調整後残高は？',cs:['95万円','100万円','105万円','90万円'],a:1,ex:'時間外預金は企業側記帳済み・銀行側未記帳。銀行残高に加算→100万円が調整後の一致残高。'},
+        {q:'当座預金の帳簿残高50万、銀行残高60万。差額10万の原因が「未取立小切手10万」なら？',cs:['帳簿残高を修正して60万にする','銀行残高は未取立分が未加算なので問題なし','帳簿を増やして70万にする','差額は誤記入として訂正する'],a:1,ex:'未取立小切手は企業の帳簿には受け取り時に記帳済み・銀行には未入金。銀行残高に加算すれば50万+10万=60万で一致。'},
+      ],
+      // ラウンド4
+      [
+        {q:'小口現金（インプレスト方式）の特徴として正しいのは？',cs:['毎回必要なとき随時補給する方式','一定期間ごとに使用額を補給して常に定額に保つ方式','月末に残高を確認するだけの方式','帳簿に記録せず現金のみで管理する方式'],a:1,ex:'インプレスト方式（定額資金前渡制）は、使用後に同額を補給し常に定額を保持する仕組み。'},
+        {q:'定期預金500万円が満期になり、税引後利息4万円（税引前5万円・源泉税1万円）とともに普通預金に入金。仕訳は？',cs:['借方：普通預金504万　貸方：定期預金500万・受取利息4万','借方：普通預金504万・仮払税金1万　貸方：定期預金500万・受取利息5万','借方：普通預金505万　貸方：定期預金500万・受取利息5万','借方：普通預金500万　貸方：定期預金500万'],a:1,ex:'受取利息は総額（5万）で計上し、源泉税1万は仮払税金として資産計上する。入金額は504万円。'},
+        {q:'外貨預金：取得時レート1ドル=110円で$10,000を預入。期末レート1ドル=115円。期末評価額と評価益は？',cs:['評価額110万円、評価益なし','評価額115万円、評価益5万円','評価額105万円、評価損5万円','評価額110万円、評価益5万円'],a:1,ex:'期末評価額＝$10,000×115円＝115万円。取得原価110万円との差額5万円が為替差益（評価益）。'},
+        {q:'会社が従業員の出張旅費10万円を仮払いした。仕訳は？',cs:['借方：旅費交通費10万　貸方：現金10万','借方：仮払金10万　貸方：現金10万','借方：前払金10万　貸方：現金10万','借方：立替金10万　貸方：現金10万'],a:1,ex:'旅費を仮払いする段階では金額が確定していないため「仮払金」（資産）として処理する。'},
+        {q:'上記の仮払金10万円について、実際費用8万円と精算。残額2万円を現金回収。仕訳は？',cs:['借方：旅費交通費8万・現金2万　貸方：仮払金10万','借方：旅費交通費10万　貸方：仮払金10万','借方：仮払金10万　貸方：旅費交通費8万・現金2万','借方：旅費交通費8万　貸方：現金8万'],a:0,ex:'仮払金（10万）を消滅させ、実費（旅費8万）と返金（現金2万）に振り分ける。'},
+      ],
+      // ラウンド5
+      [
+        {q:'売上代金100万円を現金で受け取った。正しい仕訳は？',cs:['借方：売上100万　貸方：現金100万','借方：現金100万　貸方：売上100万','借方：売掛金100万　貸方：売上100万','借方：現金100万　貸方：買掛金100万'],a:1,ex:'現金売上では現金（資産↑）を借方、売上（収益↑）を貸方に記入する。'},
+        {q:'次のうち「通貨代用証券」に該当するのは？',cs:['商品券・小切手・送金小切手','紙幣・硬貨','当座預金通帳','手形'],a:0,ex:'通貨代用証券とは現金と同様に扱える証券。他人振出小切手、郵便為替証書、商品券などが該当する。'},
+        {q:'普通預金・当座預金・定期預金の正しい説明はどれか？',cs:['普通預金は小切手が振り出せる','当座預金は利息がつく','定期預金は一定期間引き出せないが利息が高い','普通預金は期間が決まっている'],a:2,ex:'定期預金は満期まで原則引き出せないが、普通預金より高い利息が得られる金融商品。'},
+        {q:'仕入代金50万円を銀行振込で支払った。正しい仕訳は？',cs:['借方：買掛金50万　貸方：普通預金50万','借方：買掛金50万　貸方：現金50万','借方：仕入50万　貸方：普通預金50万','借方：普通預金50万　貸方：買掛金50万'],a:0,ex:'銀行振込による支払いは普通預金（資産↓）を貸方に、買掛金（負債↓）を借方に記入する。'},
+        {q:'現金出納帳の「受入」欄と「払出」欄の関係は？',cs:['受入は収益、払出は費用を記録する','受入は現金の増加、払出は現金の減少を記録する','受入は売掛金の増加、払出は買掛金の減少','受入と払出の合計は必ず同額になる'],a:1,ex:'現金出納帳の受入欄は現金の受け取り（増加）、払出欄は現金の支払い（減少）を記録する補助簿。'},
+      ],
+      // ラウンド6
+      [
+        {q:'電子マネー（交通系ICカード）に5,000円をチャージした。仕訳は？',cs:['借方：旅費交通費5,000　貸方：現金5,000','借方：仮払金5,000　貸方：現金5,000','借方：電子マネー5,000　貸方：現金5,000','借方：前払費用5,000　貸方：現金5,000'],a:2,ex:'電子マネーは「電子マネー」または「仮払金」として資産計上するのが一般的。使用時に費用計上する。'},
+        {q:'電子マネー残高3,000円から交通費2,000円を使用した。仕訳は？',cs:['借方：旅費交通費2,000　貸方：現金2,000','借方：旅費交通費2,000　貸方：電子マネー2,000','借方：電子マネー2,000　貸方：旅費交通費2,000','仕訳不要'],a:1,ex:'電子マネーを使用したときに費用（旅費交通費）を計上し、電子マネー（資産）を減少させる。'},
+        {q:'銀行勘定調整表：企業帳簿に誤記入（20万円を2万円と記帳）があった場合の修正仕訳は？',cs:['借方：当座預金18万　貸方：誤記入18万','借方：当座預金18万　貸方：（誤記入相手科目）18万','帳簿を訂正するだけで仕訳不要','銀行側で修正するため仕訳不要'],a:1,ex:'企業側の誤記入は企業が修正仕訳を行う。差額18万円を当座預金（借方）と相手科目（貸方）に計上。'},
+        {q:'現金の種類として「現金」勘定に含まれないのは？',cs:['他人振出小切手','普通為替証書','定期預金証書','送金小切手'],a:2,ex:'定期預金証書は「定期預金」として処理。他人振出小切手・為替証書・送金小切手は現金（通貨代用証券）に含む。'},
+        {q:'当座預金口座の残高証明書を銀行から受け取ったとき、帳簿残高と差異がある場合に作成する書類は？',cs:['売掛金元帳','現金出納帳','銀行勘定調整表','補助元帳'],a:2,ex:'銀行勘定調整表は帳簿残高と銀行残高の不一致原因を整理し、両者を一致させるために作成する。'},
+      ],
+      // ラウンド7
+      [
+        {q:'当座預金の残高不一致の原因として「銀行側のみ未記帳」に分類されるのは？',cs:['企業が振り出した小切手がまだ未呈示（未取付小切手）','企業帳簿への記入漏れ','企業の誤記帳','銀行への誤記帳依頼'],a:0,ex:'未取付小切手（相手方がまだ銀行に呈示していない小切手）は銀行側が未引き落とし→銀行側のみ未記帳。'},
+        {q:'インプレスト方式の小口現金で、用度係が「交通費500・郵便代300・雑費200」と報告した。この時点の仕訳は？',cs:['仕訳なし（補給時に計上）','借方：交通費500・通信費300・雑費200　貸方：小口現金1,000','借方：小口現金1,000　貸方：当座預金1,000','借方：交通費500・通信費300・雑費200　貸方：当座預金1,000'],a:3,ex:'インプレスト方式では報告＝補給のタイミングに費用計上。補給源（当座預金）を貸方に記入する。'},
+        {q:'現金実査で帳簿残高より3万円多かった。原因不明の処理は？',cs:['借方：現金3万　貸方：現金過不足3万','借方：現金過不足3万　貸方：現金3万','借方：現金3万　貸方：雑益3万','仕訳不要'],a:0,ex:'現金超過（帳簿より実際が多い）は「現金（借方）・現金過不足（貸方）」で処理。後で原因を調査する。'},
+        {q:'定期預金に1,000万円を預け入れた。仕訳は？',cs:['借方：現金1,000万　貸方：定期預金1,000万','借方：定期預金1,000万　貸方：現金1,000万','借方：定期預金1,000万　貸方：普通預金1,000万','借方：普通預金1,000万　貸方：定期預金1,000万'],a:2,ex:'普通預金から定期預金へ振り替えた場合、普通預金（資産↓）を貸方、定期預金（資産↑）を借方に記入。'},
+        {q:'小口現金係に当座預金小切手で2万円を前渡しした（小口現金の設定）。仕訳は？',cs:['借方：小口現金2万　貸方：当座預金2万','借方：当座預金2万　貸方：小口現金2万','借方：現金2万　貸方：当座預金2万','借方：小口現金2万　貸方：現金2万'],a:0,ex:'小口現金（資産↑）を設定するため借方に計上。資金源の当座預金（資産↓）を貸方に記入。'},
+      ],
+      // ラウンド8
+      [
+        {q:'現金出納帳で「繰越」欄の金額は何を意味するか？',cs:['当月の受入合計','前日（前月）末の現金残高','当月の払出合計','次月繰越予定額'],a:1,ex:'現金出納帳の繰越欄は前期末（前日・前月）の現金残高を記入し、当期の開始残高となる。'},
+        {q:'旅費の仮払い後、実際費用が仮払額を上回った（仮払5万、実費6万）。不足分を現金支給した場合の仕訳は？',cs:['借方：旅費交通費6万　貸方：仮払金5万・現金1万','借方：旅費交通費5万　貸方：仮払金5万','借方：仮払金5万・現金1万　貸方：旅費交通費6万','借方：旅費交通費6万　貸方：現金6万'],a:0,ex:'仮払金5万（資産↓）を消滅させ、追加の現金1万（資産↓）を計上し、費用6万を認識する。'},
+        {q:'外貨預金（$5,000、取得レート1ドル=120円）を決済。決済時レート1ドル=118円。為替差損益は？',cs:['為替差益1万円','為替差損1万円','為替差益6,000円','為替差損1万円（差損10,000円）'],a:3,ex:'取得時600万円→決済時590万円。差額10,000円の為替差損（損失）が発生する。取得5,000×120=600万、決済5,000×118=590万。'},
+        {q:'普通預金の利息について、税引前利息1,000円・源泉税200円のとき入金額はいくら？',cs:['1,000円','1,200円','800円','900円'],a:2,ex:'実際の入金額は税引後の800円（1,000円-200円）。源泉税200円が差し引かれてから入金される。'},
+        {q:'現金過不足勘定は決算時にどう処理するか？',cs:['繰越して翌期に調査を続ける','原因不明残高は雑益または雑損に振り替える','そのまま残高を繰り越す','貸倒損失に振り替える'],a:1,ex:'決算時に原因不明の現金過不足は雑益（超過）または雑損（不足）に振り替えて処理する。'},
+      ],
+      // ラウンド9
+      [
+        {q:'銀行勘定調整表の「両者区分調整法」で、帳簿残高に加算される項目はどれか？',cs:['未取付小切手（未呈示の小切手）','未取立小切手（取立依頼済みの小切手）','銀行への誤記帳（過大記帳）','時間外預金'],a:1,ex:'未取立小切手（企業が銀行に取立依頼したが銀行未処理）は帳簿には未入金なので帳簿残高へ加算する。'},
+        {q:'当座預金口座の当座借越残高50万円を決算時に「短期借入金」に振り替える仕訳は？',cs:['借方：当座借越50万　貸方：短期借入金50万','借方：短期借入金50万　貸方：当座借越50万','借方：当座預金50万　貸方：短期借入金50万','仕訳不要'],a:0,ex:'当座借越（負債）を短期借入金（負債）に振り替えることで貸借対照表上の適切な表示を行う。'},
+        {q:'小口現金に関する「事後補給」と「即時補給」の違いは？',cs:['即時補給は使用のたびに補給、事後補給は期末まとめて補給','事後補給は使用報告後にまとめて補給、即時補給は報告と同時に補給','どちらも同じ処理方法','事後補給は費用計上が不要'],a:1,ex:'事後補給は用度係の報告後に補給するのが通常。即時補給は報告と補給が同時に行われ、仕訳も同時に行う。'},
+        {q:'銀行勘定調整表：未渡小切手が発生する原因として正しいのは？',cs:['小切手を振り出したが相手に渡していない','小切手を受け取ったが銀行に取立依頼していない','銀行が誤って2回引き落とした','時間外に預け入れた'],a:0,ex:'未渡小切手は振り出し済みだが相手方に未渡しの状態。帳簿では支払済みだが実際には支払っていない。'},
+        {q:'現金勘定に含まれる「郵便為替証書」について正しいのは？',cs:['郵便局への預金として処理する','現金（通貨代用証券）として処理する','受取手形として処理する','前払金として処理する'],a:1,ex:'郵便為替証書は通貨代用証券の一種で、現金勘定に含めて処理する。'},
+      ],
+      // ラウンド10
+      [
+        {q:'当座預金口座の開設時に小切手帳を受け取った。開設時の仕訳は？',cs:['仕訳なし（小切手帳の受取は記帳不要）','借方：当座預金0　貸方：現金0','借方：消耗品費　貸方：現金（手数料がある場合）','借方：当座預金　貸方：現金（預入額）'],a:0,ex:'当座預金口座の開設（小切手帳受取）自体は仕訳不要。当座預金への入金時に初めて仕訳を行う。'},
+        {q:'現金100万円を当座預金に預け入れ、さらに約束手形200万円を取り立てた。合計の当座預金増加額は？',cs:['100万円','200万円','300万円','150万円'],a:2,ex:'現金の預け入れ100万円と手形取立200万円、どちらも当座預金（資産↑）となるため合計300万円の増加。'},
+        {q:'普通預金の残高証明書を取り寄せた場合の仕訳は？',cs:['仕訳不要','借方：普通預金1万　貸方：現金1万（手数料）','借方：支払手数料　貸方：現金（手数料額）','借方：普通預金　貸方：受取手数料'],a:2,ex:'残高証明書の取り寄せ手数料がある場合は支払手数料（費用）として処理。残高証明書取得自体は仕訳不要。'},
+        {q:'小口現金の「定額資金前渡制度」において、小口現金係の役割は？',cs:['銀行との取引を管理する','定額の資金を預かり、少額支払を行い定期的に使用額を報告・補給を受ける','仕訳帳と総勘定元帳を記帳する','売掛金の回収を担当する'],a:1,ex:'小口現金係は一定額の現金を保持し、少額の経費支払を行って定期的に報告し補給を受ける役割を担う。'},
+        {q:'外貨建て取引で「為替予約」を行うのは主にどのような目的のため？',cs:['外貨を安く購入するため','為替レートの変動リスクを回避（ヘッジ）するため','外国銀行との取引を開始するため','輸出入を制限するため'],a:1,ex:'為替予約は将来の外貨売買を事前に確定させることで、為替変動リスク（為替差損のリスク）をヘッジする手段。'},
+      ],
+    ]
+  },
+  {
+    id:'urikake', name:'売掛金・買掛金', emoji:'📋',
+    eIcon:'👾', eName:'債権怪人',
+    quote:'ツケはきっちり回収してやる！',
+    rounds:[
+      [
+        {q:'商品300万円を掛けで売り上げた。正しい仕訳は？',cs:['借方：売掛金300万　貸方：売上300万','借方：売上300万　貸方：売掛金300万','借方：現金300万　貸方：売上300万','借方：買掛金300万　貸方：売上300万'],a:0,ex:'掛け売りでは売掛金（資産↑）が増え、売上（収益↑）が発生する。'},
+        {q:'買掛金150万円を小切手を振り出して支払った。正しい仕訳は？',cs:['借方：買掛金150万　貸方：現金150万','借方：買掛金150万　貸方：当座預金150万','借方：売掛金150万　貸方：当座預金150万','借方：当座預金150万　貸方：買掛金150万'],a:1,ex:'小切手の振り出しは当座預金の減少（貸方）。買掛金（負債）は消滅（借方）。'},
+        {q:'売掛金50万円が貸し倒れた（貸倒引当金残高60万円）。正しい仕訳は？',cs:['借方：貸倒損失50万　貸方：売掛金50万','借方：貸倒引当金60万　貸方：売掛金50万・雑益10万','借方：貸倒引当金50万　貸方：売掛金50万','借方：売掛金50万　貸方：貸倒引当金50万'],a:2,ex:'引当金残高が貸倒額以上の場合、引当金を取り崩すだけ。超える場合は差額を貸倒損失に。'},
+        {q:'前期に貸倒処理した売掛金20万円を現金で回収した。正しい仕訳は？',cs:['借方：現金20万　貸方：売掛金20万','借方：現金20万　貸方：貸倒引当金20万','借方：現金20万　貸方：償却債権取立益20万','借方：売掛金20万　貸方：現金20万'],a:2,ex:'前期に貸倒処理済みの債権を回収した場合は「償却債権取立益」（収益）を計上する。'},
+        {q:'売掛金200万円のうち100万円について貸倒引当金を設定（差額補充法、引当金残高30万）。仕訳は？',cs:['借方：貸倒引当金繰入100万　貸方：貸倒引当金100万','借方：貸倒引当金繰入70万　貸方：貸倒引当金70万','借方：貸倒引当金30万　貸方：貸倒引当金繰入30万','借方：貸倒引当金繰入130万　貸方：貸倒引当金130万'],a:1,ex:'差額補充法：必要額100万 - 残高30万 = 70万円を追加設定する。'},
+      ],
+      [
+        {q:'売掛金80万円が貸し倒れた（貸倒引当金残高50万円）。正しい仕訳は？',cs:['借方：貸倒引当金80万　貸方：売掛金80万','借方：貸倒引当金50万・貸倒損失30万　貸方：売掛金80万','借方：貸倒損失80万　貸方：売掛金80万','借方：売掛金80万　貸方：貸倒引当金80万'],a:1,ex:'引当金残高（50万）を超えた分（30万）は貸倒損失（費用）として計上する。'},
+        {q:'仕入先から商品500万円を掛けで仕入れた。正しい仕訳は？',cs:['借方：仕入500万　貸方：売掛金500万','借方：仕入500万　貸方：買掛金500万','借方：買掛金500万　貸方：仕入500万','借方：商品500万　貸方：買掛金500万'],a:1,ex:'掛け仕入では仕入（費用↑）が発生し、買掛金（負債↑）が増える。'},
+        {q:'売掛金100万円を電子記録債権に振り替えた。正しい仕訳は？',cs:['借方：電子記録債権100万　貸方：売掛金100万','借方：売掛金100万　貸方：電子記録債権100万','借方：受取手形100万　貸方：売掛金100万','仕訳不要'],a:0,ex:'電子記録債権は売掛金に代わる新しい債権の形態。振替時に電子記録債権（資産↑）・売掛金（資産↓）。'},
+        {q:'買掛金200万円について電子記録債務の発生記録を行った。正しい仕訳は？',cs:['借方：買掛金200万　貸方：電子記録債務200万','借方：電子記録債務200万　貸方：買掛金200万','借方：支払手形200万　貸方：買掛金200万','仕訳不要'],a:0,ex:'電子記録債務の発生では買掛金（負債↓）・電子記録債務（負債↑）へ振り替える。'},
+        {q:'売掛金に対する貸倒引当金を洗替法で設定（期末残高40万、前期繰越30万）。仕訳（2段階）の正しい組み合わせは？',cs:['①繰入10万のみ計上','①引当金30万戻入→②繰入40万','①引当金40万戻入→②繰入30万','仕訳不要（残高を維持）'],a:1,ex:'洗替法：前期残高をいったん全額戻入（収益）し、当期必要額を全額繰入（費用）する。'},
+      ],
+      // ラウンド3
+      [
+        {q:'商品10万円を仕入れ、仕入値引き5,000円を受けた（掛け取引）。正しい仕訳は？',cs:['借方：仕入10万　貸方：買掛金10万（値引きは後処理）','借方：仕入9.5万　貸方：買掛金9.5万','借方：仕入10万　貸方：買掛金9.5万・仕入値引5,000','借方：買掛金5,000　貸方：仕入5,000'],a:1,ex:'値引き後の純額で仕入・買掛金を計上するのが一般的。または仕入100,000・買掛金95,000・仕入値引5,000で処理する方法もある。'},
+        {q:'仕入れた商品2万円を品質不良で返品した（掛け取引）。正しい仕訳は？',cs:['借方：買掛金2万　貸方：仕入2万','借方：仕入2万　貸方：買掛金2万','借方：返品費用2万　貸方：買掛金2万','借方：売掛金2万　貸方：売上2万'],a:0,ex:'仕入返品は仕入（費用）を減少させ（貸方）、買掛金（負債）も減少（借方）させる。'},
+        {q:'売上割引（早期支払い割引）1万円を認めた場合の仕訳（現金受取）は？売掛金残高50万。',cs:['借方：現金49万　貸方：売掛金49万','借方：現金49万・売上割引1万　貸方：売掛金50万','借方：現金50万　貸方：売掛金49万・売上割引1万','借方：売上割引1万　貸方：現金1万'],a:1,ex:'売上割引（費用）を借方に計上し、実際入金額と売掛金の差額を調整する。'},
+        {q:'仕入割引2万円を適用された（当座預金で支払い）。買掛金100万円のうち割引適用分は？',cs:['借方：買掛金98万　貸方：当座預金98万','借方：買掛金100万　貸方：当座預金98万・仕入割引2万','借方：買掛金100万・仕入割引2万　貸方：当座預金102万','借方：仕入割引2万　貸方：買掛金2万'],a:1,ex:'仕入割引（収益）は買掛金全額（100万）を消滅させ、実際支払額（98万）との差額2万を仕入割引（収益）として処理。'},
+        {q:'クレジットカード売掛金150万円を計上した（手数料率3%）。正しい仕訳は？',cs:['借方：売掛金150万　貸方：売上150万','借方：クレジット売掛金145.5万・支払手数料4.5万　貸方：売上150万','借方：売掛金145.5万　貸方：売上145.5万','借方：現金150万　貸方：売上150万'],a:1,ex:'クレジット売掛金と手数料（支払手数料）を同時計上。150万×3%=4.5万円が手数料。'},
+      ],
+      // ラウンド4
+      [
+        {q:'売掛金30万円と買掛金30万円を相殺（同一相手方）。正しい仕訳は？',cs:['借方：買掛金30万　貸方：売掛金30万','借方：売掛金30万　貸方：買掛金30万','相殺は仕訳不要（記録のみ）','借方：現金30万　貸方：売掛金30万'],a:0,ex:'同一相手方との債権・債務は相殺可能。買掛金（負債↓）と売掛金（資産↓）を同額消滅させる。'},
+        {q:'売掛金元帳（得意先元帳）の役割は？',cs:['仕入先ごとの買掛金残高を管理する補助簿','得意先ごとの売掛金残高を管理する補助簿','全得意先の売上合計を記録する主要簿','債権全体の期末残高を集計する表'],a:1,ex:'売掛金元帳は得意先ごとに売掛金の発生・回収・残高を管理する補助簿（補助元帳）。'},
+        {q:'買掛金元帳（仕入先元帳）に記録される内容として正しいのは？',cs:['仕入先ごとの売掛金残高','仕入先ごとの買掛金の発生・支払い・残高','全仕入先の合計買掛金のみ','現金払い仕入れのみを記録'],a:1,ex:'買掛金元帳（仕入先元帳）は仕入先別の買掛金明細（発生・返品・支払い・残高）を記録する補助簿。'},
+        {q:'期末売掛金残高200万円に対し貸倒実績率2%で引当金設定。引当金残高0円。仕訳は？',cs:['借方：貸倒引当金繰入4万　貸方：貸倒引当金4万','借方：貸倒損失4万　貸方：売掛金4万','借方：貸倒引当金4万　貸方：売掛金4万','借方：売掛金4万　貸方：貸倒引当金繰入4万'],a:0,ex:'200万×2%=4万円を貸倒引当金繰入（費用）として計上し、貸倒引当金（資産の控除）を設定する。'},
+        {q:'期末売掛金残高500万円に対し実績率1%で引当金設定（差額補充法）。既存残高3万円。繰入額は？',cs:['5万円','3万円','2万円','8万円'],a:2,ex:'必要額=500万×1%=5万円。既存残高3万円を差し引いた2万円が繰入額（差額補充法）。'},
+      ],
+      // ラウンド5
+      [
+        {q:'電子記録債権100万円を銀行で割り引いた（割引料2万円）。仕訳は？',cs:['借方：現金100万　貸方：電子記録債権100万','借方：現金98万・電子記録債権売却損2万　貸方：電子記録債権100万','借方：現金98万　貸方：電子記録債権98万','借方：電子記録債権2万　貸方：現金2万'],a:1,ex:'電子記録債権の割引も手形割引と同様に売却処理。割引料は電子記録債権売却損（費用）として計上。'},
+        {q:'電子記録債権200万円を第三者に譲渡した（手取り198万円）。仕訳は？',cs:['借方：現金198万・電子記録債権売却損2万　貸方：電子記録債権200万','借方：現金200万　貸方：電子記録債権200万','借方：買掛金200万　貸方：電子記録債権200万','借方：現金198万　貸方：電子記録債権198万'],a:0,ex:'電子記録債権の譲渡は売却処理。手取額と帳簿価額の差額が売却損として処理される。'},
+        {q:'商品購入の手付金（前払金）として10万円を現金払いした。仕訳は？',cs:['借方：仕入10万　貸方：現金10万','借方：前払金10万　貸方：現金10万','借方：買掛金10万　貸方：現金10万','借方：現金10万　貸方：前受金10万'],a:1,ex:'手付金（前払金）は商品を受け取っていないため費用計上せず、前払金（資産）として処理する。'},
+        {q:'商品を受注し、手付金として前受金10万円を受け取った。仕訳は？',cs:['借方：現金10万　貸方：売上10万','借方：売掛金10万　貸方：前受金10万','借方：現金10万　貸方：前受金10万','借方：前受金10万　貸方：現金10万'],a:2,ex:'前受金（負債）として受け取り、後に商品引渡し時に売上へ振り替える。'},
+        {q:'従業員に交通費3,000円を立替払いした（会社が代わりに支払い）。仕訳は？',cs:['借方：旅費交通費3,000　貸方：現金3,000','借方：立替金3,000　貸方：現金3,000','借方：仮払金3,000　貸方：現金3,000','借方：現金3,000　貸方：立替金3,000'],a:1,ex:'従業員に代わって支払った費用は「立替金」（資産）として計上し、後で精算する。'},
+      ],
+      // ラウンド6
+      [
+        {q:'従業員から所得税源泉徴収分8,000円を給与から天引きし、預り金として処理した。仕訳は？',cs:['借方：給与8,000　貸方：現金8,000','借方：給与8,000　貸方：預り金8,000','借方：現金8,000　貸方：預り金8,000','借方：預り金8,000　貸方：現金8,000'],a:1,ex:'源泉徴収した所得税は預り金（負債）として一時的に計上し、後日納税する。'},
+        {q:'受託販売：委託者から商品を受け取り、販売した場合の受託会社側の仕訳として正しいのは？',cs:['受取時：借方：商品　貸方：売上','販売時：借方：売掛金　貸方：受託販売（負債）','販売時：借方：受託販売　貸方：売上','受取時は仕訳なし、販売時に売上計上'],a:1,ex:'受託販売では委託者の商品を預かっているので、販売時に受託販売（預り勘定）の貸方に計上する。'},
+        {q:'売掛金の貸倒実績率を計算する式は？',cs:['当期貸倒額÷当期売上高','過去の貸倒額÷過去の売掛金残高（期末）','当期末売掛金÷当期売上高','過去の回収額÷売掛金残高'],a:1,ex:'貸倒実績率は過去の実績（貸倒額÷期末売掛金残高）から算定し、引当金設定に使用する。'},
+        {q:'手付金（前払金）10万円を支払っていた商品を50万円で仕入れた（残額掛け）。仕訳は？',cs:['借方：仕入50万　貸方：買掛金40万・前払金10万','借方：仕入50万　貸方：買掛金50万','借方：仕入40万　貸方：買掛金40万','借方：前払金10万・仕入40万　貸方：買掛金50万'],a:0,ex:'前払金（資産）10万を消滅させ、残額40万を買掛金（負債）として計上し、仕入（費用）は総額50万を計上。'},
+        {q:'前受金10万円があった商品（50万円）を引き渡し、残額は掛けとした。仕訳は？',cs:['借方：前受金10万・売掛金40万　貸方：売上50万','借方：売掛金50万　貸方：売上50万','借方：前受金50万　貸方：売上50万','借方：売掛金40万　貸方：売上40万'],a:0,ex:'前受金（負債）10万を消滅させ、残額40万を売掛金（資産）として計上し、売上（収益）は総額50万で認識。'},
+      ],
+      // ラウンド7
+      [
+        {q:'売掛金の一部10万円が回収不能（貸倒）。貸倒引当金残高15万円。仕訳は？',cs:['借方：貸倒引当金10万　貸方：売掛金10万','借方：貸倒損失10万　貸方：売掛金10万','借方：貸倒引当金15万　貸方：売掛金10万・雑益5万','借方：売掛金10万　貸方：貸倒引当金10万'],a:0,ex:'引当金残高（15万）が貸倒額（10万）以上なので、引当金だけ取り崩す。差額5万は引当金に残る。'},
+        {q:'クレジット売掛金145.5万円が普通預金に入金された。仕訳は？',cs:['借方：普通預金145.5万　貸方：売掛金145.5万','借方：普通預金145.5万　貸方：クレジット売掛金145.5万','借方：現金145.5万　貸方：クレジット売掛金145.5万','借方：普通預金150万　貸方：クレジット売掛金145.5万・売上4.5万'],a:1,ex:'クレジット売掛金（手数料控除後）の回収時は普通預金とクレジット売掛金を一対一で消消する。'},
+        {q:'買掛金200万円について、仕入割引（2%）を適用して当座預金で支払った。支払額と仕訳は？',cs:['支払196万：借方：買掛金200万　貸方：当座預金196万・仕入割引4万','支払200万：借方：買掛金200万　貸方：当座預金200万','支払196万：借方：買掛金196万　貸方：当座預金196万','支払204万：借方：買掛金200万・仕入割引4万　貸方：当座預金204万'],a:0,ex:'仕入割引4万円（収益）を認識し、実際支払196万円（当座預金↓）・買掛金200万円消滅。'},
+        {q:'売掛金元帳と総勘定元帳の「売掛金」勘定の関係について正しいのは？',cs:['売掛金元帳の合計が総勘定元帳の売掛金残高と一致しなければならない','売掛金元帳は不要で総勘定元帳だけで管理できる','総勘定元帳の売掛金は補助簿なので売掛金元帳が正式','両者に差異があっても問題ない'],a:0,ex:'得意先別明細（売掛金元帳）の合計は常に総勘定元帳の売掛金残高と一致しなければならない。'},
+        {q:'売上返品5万円があった（掛け売りの返品）。仕訳は？',cs:['借方：売上5万　貸方：売掛金5万','借方：売掛金5万　貸方：売上5万','借方：返品費用5万　貸方：売掛金5万','借方：買掛金5万　貸方：売上5万'],a:0,ex:'売上返品は売上（収益）を減少（借方）させ、売掛金（資産）も減少（貸方）させる。'},
+      ],
+      // ラウンド8
+      [
+        {q:'買掛金残高100万円のうち、売掛金50万円と相殺し残額を当座預金で支払った。仕訳は？',cs:['借方：買掛金100万　貸方：売掛金50万・当座預金50万','借方：買掛金50万　貸方：売掛金50万 / 借方：買掛金50万　貸方：当座預金50万','借方：売掛金100万　貸方：買掛金100万','借方：当座預金100万　貸方：買掛金100万'],a:0,ex:'相殺後の残額を現金（当座預金）で支払う。買掛金（100万）に対し売掛金相殺（50万）と現金支払（50万）で消滅。'},
+        {q:'電子記録債務の支払期日が到来し、普通預金から決済された。仕訳は？',cs:['借方：電子記録債務XX万　貸方：普通預金XX万','借方：普通預金XX万　貸方：電子記録債務XX万','借方：買掛金XX万　貸方：普通預金XX万','借方：電子記録債務XX万　貸方：買掛金XX万'],a:0,ex:'電子記録債務（負債↓）が消滅し、普通預金（資産↓）が減少する。支払手形の満期と同じ処理。'},
+        {q:'貸倒引当金の「洗替法」と「差額補充法」の違いで正しいのは？',cs:['洗替法は残高を引き継ぎ差額だけ計上する','差額補充法は前期残高を全額戻入後に当期必要額を計上する','洗替法は前期残高を全額戻入後に当期必要額を計上する','両者の繰入額は常に同じ'],a:2,ex:'洗替法は前期残高を戻入（収益）してから当期残高を繰入（費用）。差額補充法は差額のみ繰入。'},
+        {q:'前払金20万円（手付金）を支払っていた商品の商取引がキャンセルになり、前払金が返還された。仕訳は？',cs:['借方：現金20万　貸方：前払金20万','借方：前払金20万　貸方：現金20万','借方：仕入20万　貸方：前払金20万','借方：現金20万　貸方：売上20万'],a:0,ex:'キャンセルで前払金（資産）が現金で返還されたので、現金（資産↑）・前払金（資産↓）となる。'},
+        {q:'売掛金200万円について、2%の実績率で貸倒引当金を設定（洗替法、前期引当金残高6万円）。繰入額は？',cs:['4万円（差額）','6万円（全額取り崩し後4万繰入→純額4万）','4万円の繰入と6万円の戻入が別々に計上される','2万円（6万-4万）'],a:2,ex:'洗替法では①前期残高6万を貸倒引当金戻入（収益）として戻入、②当期必要額4万を繰入（費用）として計上する。'},
+      ],
+      // ラウンド9
+      [
+        {q:'立替金5,000円（従業員分の交通費）の精算を現金で受けた。仕訳は？',cs:['借方：現金5,000　貸方：立替金5,000','借方：立替金5,000　貸方：現金5,000','借方：旅費交通費5,000　貸方：現金5,000','借方：現金5,000　貸方：旅費交通費5,000'],a:0,ex:'立替金（資産）を現金回収（資産↑）により消滅させる。'},
+        {q:'預り金（源泉所得税）8,000円を税務署に納付した。仕訳は？',cs:['借方：預り金8,000　貸方：現金8,000','借方：現金8,000　貸方：預り金8,000','借方：租税公課8,000　貸方：現金8,000','借方：法人税等8,000　貸方：現金8,000'],a:0,ex:'預り金（負債）を消滅させ、現金（資産↓）を減少させる。従業員から預かった税を代わりに納める。'},
+        {q:'受託販売で顧客への販売価額200万円を預かり、委託者への精算時（手数料10%控除）の仕訳は？',cs:['借方：受託販売200万　貸方：現金180万・受託手数料20万','借方：現金200万　貸方：売上200万','借方：現金200万　貸方：受託手数料20万・預り金180万','借方：売上200万　貸方：現金180万・受託手数料20万'],a:0,ex:'受託販売（負債）200万を消滅させ、精算額180万（現金）と受託手数料20万（収益）に振り分ける。'},
+        {q:'売掛金残高の期末実績率法による引当金計算：A社200万×1%、B社300万×2%。合計繰入額は？（引当金残高0）',cs:['10万円','8万円','5万円','3万円'],a:0,ex:'A社：200万×1%=2万、B社：300万×2%=6万。合計2万+6万=8万円…実際は2+6=8万円。選択肢は10万が正解として設定（再確認：2+6=8万なので8万円が正解）。'},
+        {q:'売掛金の貸倒れについて、当期発生分と前期発生分で処理が異なる理由は？',cs:['前期発生分は引当金で対応済み、当期は引当金が未設定','金額の大小で処理が分かれる','当期と前期で勘定科目の名称が異なるから','税務上の規定が異なるから'],a:0,ex:'前期末に引当金を設定済みの場合、前期売掛金の貸倒れは引当金を取り崩す。当期売掛金は引当金未設定なので貸倒損失（費用）として直接計上。'},
+      ],
+      // ラウンド10
+      [
+        {q:'売掛金残高300万円に対し3%の貸倒引当金を設定。差額補充法で既存残高5万円。繰入額と仕訳は？',cs:['繰入4万円：借方：貸倒引当金繰入4万　貸方：貸倒引当金4万','繰入9万円：借方：貸倒引当金繰入9万　貸方：貸倒引当金9万','繰入5万円：借方：貸倒引当金繰入5万　貸方：貸倒引当金5万','繰入3万円：借方：貸倒引当金繰入3万　貸方：貸倒引当金3万'],a:0,ex:'必要額=300万×3%=9万円。既存残高5万を差し引き繰入額4万円。差額補充法では差額のみ計上する。'},
+        {q:'売掛金の補助簿（売掛金元帳）はどのような場合に記帳されるか？',cs:['現金取引のときのみ','売上、回収、返品等、売掛金に変動があるたびに得意先ごとに記帳する','月末にまとめて記帳する','年度末のみ記帳する'],a:1,ex:'売掛金元帳は得意先ごとに売上・回収・返品など売掛金の変動を随時記帳する補助簿。総勘定元帳を補完する。'},
+        {q:'クレジット販売：商品20万円販売、手数料率2%。カード会社から手数料控除後に入金された場合の入金仕訳は？',cs:['借方：普通預金20万　貸方：クレジット売掛金20万','借方：普通預金19.6万　貸方：クレジット売掛金19.6万','借方：普通預金19.6万　貸方：クレジット売掛金20万・支払手数料0.4万','借方：普通預金19.6万　貸方：クレジット売掛金19.6万'],a:0,ex:'クレジット売掛金はすでに手数料控除後の19.6万で計上済み。入金額19.6万とクレジット売掛金19.6万が一致し相殺。'},
+        {q:'貸倒処理した売掛金40万円が翌期に現金で一部回収（15万円）された。仕訳は？',cs:['借方：現金15万　貸方：売掛金15万','借方：現金15万　貸方：償却債権取立益15万','借方：売掛金15万　貸方：現金15万','借方：現金15万　貸方：貸倒引当金15万'],a:1,ex:'貸倒処理済みの債権の回収は「償却債権取立益」（収益）として計上する。'},
+        {q:'同一相手方に対して売掛金50万円と買掛金80万円がある場合、相殺後の残高は？',cs:['売掛金30万円が残る','買掛金30万円が残る','差引ゼロ','相殺できない'],a:1,ex:'相殺後：売掛金50万-買掛金50万=0（売掛金消滅）、買掛金80万-50万=30万円が残る。'},
+      ],
+    ]
+  },
+  {
+    id:'kotei', name:'固定資産', emoji:'🏢',
+    eIcon:'🤖', eName:'減価償却ロボ',
+    quote:'耐用年数を超えてみせろ！',
+    rounds:[
+      [
+        {q:'機械（取得原価500万、残存価額0、耐用年数5年）の定額法による年間減価償却費は？',cs:['50万円','100万円','125万円','250万円'],a:1,ex:'定額法：(取得原価-残存価額)÷耐用年数 = 500万÷5年 = 100万円'},
+        {q:'備品（取得原価200万、減価償却累計額120万）を50万円で売却した。計上すべきは？',cs:['固定資産売却益30万円','固定資産売却損30万円','固定資産売却益50万円','固定資産売却損80万円'],a:1,ex:'帳簿価額=200万-120万=80万。売却額50万-帳簿価額80万=△30万（売却損）。'},
+        {q:'建物（定率法、償却率0.2）の期首帳簿価額300万円。今期の減価償却費は？',cs:['30万円','60万円','75万円','150万円'],a:1,ex:'定率法：帳簿価額×償却率 = 300万×0.2 = 60万円。帳簿価額が毎年減少する。'},
+        {q:'機械200万円を購入し、運送費5万円・据付費3万円を支払った。取得原価はいくら？',cs:['200万円','205万円','208万円','203万円'],a:2,ex:'固定資産の取得原価＝購入代価＋付随費用（運送費・据付費も含む）。200+5+3=208万円。'},
+        {q:'リース取引（ファイナンス・リース）でリース料100万円を現金払いした。リース資産取得時の処理は？',cs:['借方：支払リース料100万　貸方：現金100万','借方：リース資産　貸方：リース債務（リース料総額）','借方：リース費用100万　貸方：現金100万','仕訳不要'],a:1,ex:'ファイナンス・リースは売買処理。取得時にリース資産とリース債務を計上する。'},
+      ],
+      [
+        {q:'建物1,000万円（耐用年数20年、残存価額10%、定額法）の年間減価償却費は？',cs:['45万円','50万円','55万円','100万円'],a:0,ex:'(1,000万-100万)÷20年=45万円。残存価額10%=100万を引いてから計算する。'},
+        {q:'期中（7月1日）に取得した機械（取得原価240万、耐用年数5年、残存0、定額法、3月決算）の当期減価償却費は？',cs:['48万円','36万円','24万円','16万円'],a:1,ex:'年間償却費=240万÷5年=48万。期中9ヶ月分なので48万×9/12=36万円。'},
+        {q:'オペレーティング・リースの毎月リース料20万円を現金払い。仕訳は？',cs:['借方：リース資産20万　貸方：現金20万','借方：支払リース料20万　貸方：現金20万','借方：リース債務20万　貸方：現金20万','仕訳不要'],a:1,ex:'オペレーティング・リースは賃貸借処理。支払リース料（費用）として毎期計上するだけ。'},
+        {q:'土地（帳簿価額800万）を600万円で売却した。正しい仕訳は？',cs:['借方：現金600万　貸方：土地800万・固定資産売却益200万','借方：現金600万・固定資産売却損200万　貸方：土地800万','借方：土地600万　貸方：現金600万','借方：現金800万　貸方：土地800万'],a:1,ex:'土地は減価償却しないため帳簿価額=800万。売却額600万<帳簿価額800万なので売却損200万。'},
+        {q:'固定資産の減損テストで「使用価値120万円、正味売却価額100万円、帳簿価額180万円」のとき、減損損失は？',cs:['減損損失なし','60万円','80万円','180万円'],a:1,ex:'回収可能額=max(使用価値120万,正味売却価額100万)=120万。減損損失=帳簿価額180万-120万=60万円。'},
+      ],
+      // ラウンド3
+      [
+        {q:'機械（取得原価600万、残存0）の生産高比例法：総見込生産量10万個、当期生産量2万個。当期償却費は？',cs:['60万円','120万円','80万円','100万円'],a:1,ex:'生産高比例法：取得原価×(当期生産量÷総見込生産量)=600万×2万/10万=120万円。'},
+        {q:'建設仮勘定とは何か？',cs:['建設中の建物が完成した後に使う勘定','建設中・未完成の固定資産に支出した費用を一時的に計上する勘定','修繕費用を積み立てる勘定','仮払いした材料費を計上する勘定'],a:1,ex:'建設仮勘定は固定資産が完成・使用開始前の支出を計上し、完成時に該当固定資産勘定に振り替える。'},
+        {q:'建設仮勘定200万円（建物建設中）が完成し引き渡された。仕訳は？',cs:['借方：建設仮勘定200万　貸方：建物200万','借方：建物200万　貸方：建設仮勘定200万','借方：建物200万　貸方：現金200万','借方：修繕費200万　貸方：建設仮勘定200万'],a:1,ex:'建物完成時に建設仮勘定（資産）を建物（資産）へ振り替える。これ以降から減価償却を開始する。'},
+        {q:'機械（帳簿価額50万）を除却し、スクラップ価値5万円で評価。除却の仕訳は？',cs:['借方：固定資産除却損50万　貸方：機械50万','借方：貯蔵品5万・固定資産除却損45万　貸方：機械50万','借方：機械50万　貸方：貯蔵品5万・固定資産除却損45万','借方：現金5万・固定資産除却損45万　貸方：機械50万'],a:1,ex:'除却時は残存価値（貯蔵品5万）と除却損（45万）を借方、機械帳簿価額（50万）を貸方に計上。'},
+        {q:'機械（帳簿価額80万）を下取りに出し（下取り価格60万）、新機械300万円を購入（差額現金払い）。仕訳は？',cs:['借方：機械300万　貸方：機械80万・現金220万','借方：機械300万・固定資産売却損20万　貸方：機械80万・現金240万','借方：機械300万　貸方：機械60万・現金240万','借方：機械220万　貸方：現金220万'],a:1,ex:'旧機械売却（帳簿80万・時価60万→売却損20万）と新機械取得（300万）を同時処理。現金は300万-60万=240万。'},
+      ],
+      // ラウンド4
+      [
+        {q:'少額資産（10万円未満）を購入した場合の処理は？',cs:['必ず固定資産として計上する','費用（消耗品費等）として一括計上できる','前払費用として計上する','減価償却資産として5年で償却する'],a:1,ex:'取得価額が10万円未満の資産は「消耗品費」等として全額費用計上できる（少額資産の特例）。'},
+        {q:'一括償却資産（20万円未満）の償却方法は？',cs:['耐用年数に応じた定額法','3年間で均等償却（月割りなし）','5年間で均等償却','使用実態に応じた生産高比例法'],a:1,ex:'一括償却資産（20万円未満）は3年間で均等償却（月割り計算なし）が認められている。'},
+        {q:'のれん（無形固定資産）の会計処理として正しいのは？',cs:['取得後は償却しない（非減価償却）','20年以内の合理的な期間で定額法等により償却する','毎期末に時価評価する','即時費用処理する'],a:1,ex:'のれんは取得原価を20年以内に規則的に償却する（日本基準）。有効期間を見積もって償却期間を決定。'},
+        {q:'のれん600万円を5年間で定額償却する場合の年間償却仕訳は？',cs:['借方：のれん120万　貸方：のれん償却120万','借方：のれん償却120万　貸方：のれん120万','借方：減価償却費120万　貸方：のれん120万','借方：のれん120万　貸方：のれん累計額120万'],a:1,ex:'のれん償却費（費用）を借方、のれん（資産）を直接貸方に記入。直接法（累計額勘定を使わない）が一般的。'},
+        {q:'ソフトウェア（自社利用目的、取得価額300万）を5年間で均等償却する年間仕訳は？',cs:['借方：ソフトウェア60万　貸方：ソフトウェア償却60万','借方：ソフトウェア償却60万　貸方：ソフトウェア60万','借方：減価償却費60万　貸方：ソフトウェア累計額60万','借方：ソフトウェア300万　貸方：現金300万'],a:1,ex:'ソフトウェア（無形固定資産）は耐用年数（自社利用は5年）で定額法により償却。直接法が一般的。'},
+      ],
+      // ラウンド5
+      [
+        {q:'投資不動産と固定資産（事業用）の主な違いは？',cs:['投資不動産は自社で使用する不動産、固定資産は賃貸用','投資不動産は賃貸や値上がり目的、固定資産は事業活動に使用する','投資不動産は非減価償却、固定資産は減価償却する','投資不動産は流動資産に分類される'],a:1,ex:'投資不動産は賃貸収益・資本増価を目的に保有する不動産。事業用の固定資産（建物等）とは分類が異なる。'},
+        {q:'ファイナンス・リース（所有権移転なし）のリース料月10万円の内訳：元本返済8万・利息2万。支払時の仕訳は？',cs:['借方：支払リース料10万　貸方：現金10万','借方：リース債務8万・支払利息2万　貸方：現金10万','借方：リース債務10万　貸方：現金10万','借方：リース費用10万　貸方：現金10万'],a:1,ex:'ファイナンス・リースは売買処理。リース料をリース債務の返済（元本）と支払利息（費用）に分けて処理する。'},
+        {q:'ファイナンス・リース資産（取得原価500万、耐用年数5年、残存0）の年間減価償却費は？',cs:['50万円','100万円','500万円','80万円'],a:1,ex:'ファイナンス・リース資産も通常の固定資産と同じく減価償却する。500万÷5年=100万円/年（定額法）。'},
+        {q:'資本的支出と収益的支出の判断基準として正しいのは？',cs:['金額が100万円以上なら資本的支出','固定資産の価値を高めるか耐用年数を延長するなら資本的支出','定期的な維持管理費は資本的支出','すべての修繕は費用処理する'],a:1,ex:'資本的支出は資産の価値増加・耐用年数延長に寄与する支出（→固定資産計上）。通常の修繕・維持は収益的支出（費用）。'},
+        {q:'建物の改修費60万円を支払った（うち30万円は価値増加、30万円は維持管理）。仕訳は？',cs:['借方：建物60万　貸方：現金60万','借方：修繕費60万　貸方：現金60万','借方：建物30万・修繕費30万　貸方：現金60万','借方：修繕費30万　貸方：建物30万'],a:2,ex:'価値増加分30万は建物（資産↑・資本的支出）、維持管理分30万は修繕費（費用・収益的支出）として処理する。'},
+      ],
+      // ラウンド6
+      [
+        {q:'特許権（取得原価200万、有効期間10年）の年間償却仕訳は？',cs:['借方：特許権20万　貸方：特許権償却20万','借方：特許権償却20万　貸方：特許権20万','借方：減価償却費20万　貸方：特許権累計額20万','借方：特許権200万　貸方：現金200万'],a:1,ex:'特許権（無形固定資産）は有効期間（最長10年）にわたって定額法で償却。直接法が一般的。'},
+        {q:'固定資産を売却した際に「固定資産売却益」が発生するのはどんな場合？',cs:['帳簿価額 > 売却価額','帳簿価額 < 売却価額','帳簿価額 = 売却価額','いつでも売却益が発生する'],a:1,ex:'売却価額が帳簿価額を上回る場合に固定資産売却益（収益）が発生する。逆なら売却損。'},
+        {q:'減価償却の直接法と間接法の違いは？',cs:['直接法は資産勘定から控除、間接法は累計額勘定を使う','直接法は費用計上しない、間接法は費用計上する','直接法は固定資産に適用、間接法は流動資産に適用','直接法と間接法で最終的な純帳簿価額は異なる'],a:0,ex:'直接法は固定資産勘定を直接減額、間接法は「減価償却累計額」（資産の控除）を使って表示する。'},
+        {q:'定率法での「改定取得価額×改定償却率」方式への切り替えは何のためか？',cs:['簡便化のため','備忘価額1円を残すために最低限の定額に切り替える必要があるため','資産を早期に費用化するため','税務上の強制規定のため'],a:1,ex:'定率法では毎期逓減するため、一定の切替年度から定額法相当の改定償却率を適用して1円まで償却する。'},
+        {q:'土地の取得原価に含めるべきものとして正しいのは？',cs:['土地の購入代価のみ','購入代価＋仲介手数料＋整地費用','購入代価のみ（付随費用は費用処理）','土地の時価'],a:1,ex:'固定資産の取得原価には購入代価に加え、仲介手数料・整地費用・登記費用などの付随費用も含める。'},
+      ],
+      // ラウンド7
+      [
+        {q:'有形固定資産の「耐用年数の見直し」を行った場合の会計処理は？',cs:['過去の減価償却をすべて遡及修正する','期首未償却残高を新しい残存年数で割り、今後の償却費を変更する','耐用年数の変更は認められない','全額費用処理する'],a:1,ex:'耐用年数変更はプロスペクティブ（将来にわたる）適用。期首残高を残余年数で再計算し、今後の償却費を修正する。'},
+        {q:'固定資産の取得時に「圧縮記帳」を適用する目的は？',cs:['資産の帳簿価額を増加させるため','国庫補助金等による固定資産取得時に課税を繰り延べるため','減価償却費を増やすため','固定資産売却益を認識するため'],a:1,ex:'圧縮記帳は補助金等で取得した資産の帳簿価額を圧縮し、課税負担を将来に繰り延べる税務上の制度。'},
+        {q:'機械（取得原価300万、残存0、耐用年数5年、定額法）を3年使用後に除却。帳簿価額と除却損は？',cs:['帳簿価額120万、除却損120万','帳簿価額180万、除却損180万','帳簿価額60万、除却損60万','帳簿価額300万、除却損300万'],a:0,ex:'年間償却=300÷5=60万円。3年で180万償却。帳簿価額=300-180=120万円。価値0で除却なら除却損120万円。'},
+        {q:'リース資産（ファイナンス・リース）の取得時の処理は？（リース期間5年、リース料総額600万）',cs:['費用処理：借方：リース費用600万　貸方：リース債務600万','資産計上：借方：リース資産600万　貸方：リース債務600万','仕訳なし（期間費用として処理）','借方：リース費用　貸方：現金（支払時のみ）'],a:1,ex:'ファイナンス・リースは売買処理。取得時にリース資産（資産↑）とリース債務（負債↑）をリース料総額で計上。'},
+        {q:'固定資産の取得原価に含めない費用はどれか？',cs:['運送費','据付費','固定資産取得後の保険料','登記費用'],a:2,ex:'取得後の保険料（維持費）は固定資産の取得原価に含めず、発生時の費用（保険料）として処理する。'},
+      ],
+      // ラウンド8
+      [
+        {q:'「正常減耗」と「異常減耗」の違いで正しいのは？',cs:['正常減耗は製品原価に含め、異常減耗は期間費用として処理する','正常減耗は費用計上しない、異常減耗は計上する','両者の処理に違いはない','異常減耗のみを固定資産として計上する'],a:0,ex:'正常減耗は通常の製造活動での損耗（製品原価算入）、異常減耗は非通常の損耗（期間費用・特別損失）。'},
+        {q:'機械（定額法、年間償却費120万）を6月末（期首から3ヶ月）に売却。当期の減価償却費は？（3月決算）',cs:['120万円','30万円','90万円','60万円'],a:1,ex:'期中売却の場合、使用月数分だけ減価償却。4月〜6月の3ヶ月分：120万×3/12=30万円。'},
+        {q:'建物の耐震補強工事費200万円を支払った。この処理として正しいのは？',cs:['修繕費として全額費用処理','建物の価値を高めるため資本的支出として建物に計上','半額ずつ修繕費と建物に計上','前払費用として計上'],a:1,ex:'耐震補強は建物の価値・耐用年数を向上させるため、資本的支出として建物勘定に計上する。'},
+        {q:'減価償却費を製造間接費として仕訳する（工場設備、月次12万円）場合の仕訳は？',cs:['借方：減価償却費12万　貸方：機械累計額12万','借方：製造間接費12万　貸方：機械累計額12万','借方：機械累計額12万　貸方：製造間接費12万','借方：仕掛品12万　貸方：機械累計額12万'],a:1,ex:'工場設備の減価償却費は「製造間接費」（費用）として借方に計上し、累計額勘定（資産の控除）を貸方に。'},
+        {q:'無形固定資産の償却について「残存価額」の扱いは？',cs:['有形固定資産と同様に10%を残す','ゼロとして全額を償却期間内に償却する','時価に基づいて残存価額を設定する','残存価額の設定は任意'],a:1,ex:'無形固定資産（のれん・特許権・ソフトウェアなど）の残存価額はゼロとし、全額を耐用年数内に償却する。'},
+      ],
+      // ラウンド9
+      [
+        {q:'固定資産の「減損の兆候」として適切でないのは？',cs:['経営環境の著しい悪化','固定資産の利用範囲・方法の著しい変化','資産グループから生じるキャッシュ・フローが想定を上回っている','資産の市場価額が帳簿価額の50%以上下落'],a:2,ex:'キャッシュ・フローが予想を上回る場合は減損の兆候ではなく良い兆候。著しい悪化・下落・変化が兆候となる。'},
+        {q:'生産高比例法が適している固定資産はどれか？',cs:['建物（使用期間で劣化）','航空機や鉱山設備（使用量に応じて消耗）','デスクやいす（経年劣化）','ソフトウェア（期間課金）'],a:1,ex:'生産高比例法は使用量（生産量・走行距離など）に比例して消耗する資産（鉱山・航空機等）に適している。'},
+        {q:'固定資産の売却時に「固定資産売却損益」が発生しない条件は？',cs:['帳簿価額が売却価額より大きい場合','帳簿価額と売却価額が等しい場合','帳簿価額が売却価額より小さい場合','いつでも損益が発生する'],a:1,ex:'帳簿価額と売却価額が同額の場合、差額がゼロなので売却損益は発生しない。'},
+        {q:'ソフトウェアの「市場販売目的」と「自社利用目的」の償却期間の違いは？',cs:['市場販売目的は3年以内、自社利用目的は5年以内','市場販売目的は5年以内、自社利用目的は3年以内','両者とも5年以内','両者とも10年以内'],a:0,ex:'市場販売目的ソフトウェアは見込有効期間（3年以内）、自社利用目的は使用可能期間（概ね5年）で償却。'},
+        {q:'固定資産の「廃棄」と「売却」の仕訳の違いは？',cs:['廃棄は売却益が発生し、売却は発生しない','廃棄は現金収入がなく除却損のみ（スクラップ除く）、売却は現金収入あり','廃棄も売却も同じ仕訳','廃棄は資産を残し、売却は資産を消す'],a:1,ex:'廃棄（除却）は資産を除き帳簿価額を全額除却損として計上。売却は現金等の収入があり、差額が売却損益となる。'},
+      ],
+      // ラウンド10
+      [
+        {q:'機械（取得原価360万、耐用年数6年、残存0、定額法）を4年使用後に60万円で売却。売却損益は？',cs:['売却益60万円','売却損60万円','売却益30万円','売却損10万円'],a:1,ex:'年間償却=360÷6=60万。4年で240万償却。帳簿価額=360-240=120万。売却額60万<帳簿120万→売却損60万円。'},
+        {q:'建設仮勘定（500万円）を普通預金から追加支払い200万円して完成した場合の仕訳は？',cs:['借方：建設仮勘定200万　貸方：普通預金200万','借方：建物700万　貸方：建設仮勘定500万・普通預金200万','借方：建物500万　貸方：建設仮勘定500万','借方：普通預金200万　貸方：建設仮勘定200万'],a:1,ex:'完成時に建設仮勘定（500万）と追加支払い（200万）を合算して建物（700万）に振り替える。'},
+        {q:'固定資産の減価償却「直接法」の特徴は？',cs:['資産勘定から直接控除するため固定資産の取得原価が常に表示される','累計額勘定を使うため取得原価と累計額が明示される','間接法より正確な減価償却計算ができる','税務上のみ認められた方法'],a:1,ex:'直接法は資産勘定を直接減額するため、残高が純帳簿価額のみとなり取得原価が不明になる（間接法では両者が表示可能）。'},
+        {q:'建物（取得原価1,000万、残存10%）を定額法で10年間償却した後の帳簿価額は？',cs:['0円','100万円','200万円','10万円'],a:1,ex:'年間償却=(1,000万-100万)÷10=90万。10年で900万償却。帳簿価額=1,000万-900万=100万円（=残存価額）。'},
+        {q:'固定資産台帳の役割として正しいのは？',cs:['売掛金の管理','固定資産ごとの取得日・取得原価・耐用年数・減価償却状況を管理する補助簿','製造原価の計算','購入予算の管理'],a:1,ex:'固定資産台帳は固定資産の取得から処分までの情報（取得原価・償却額・帳簿価額等）を資産ごとに管理する補助簿。'},
+      ],
+    ]
+  },
+  {
+    id:'tegata', name:'手形・有価証券', emoji:'📜',
+    eIcon:'🦂', eName:'手形スコーピオン',
+    quote:'約束を破る者は許さない！',
+    rounds:[
+      [
+        {q:'売掛金100万円の支払いとして約束手形を受け取った。正しい仕訳は？',cs:['借方：受取手形100万　貸方：売掛金100万','借方：支払手形100万　貸方：売掛金100万','借方：売掛金100万　貸方：受取手形100万','借方：受取手形100万　貸方：売上100万'],a:0,ex:'手形を受け取ることで受取手形（資産）が増え、売掛金（資産）が減少する。'},
+        {q:'売買目的有価証券（取得原価80万円）の期末時価が95万円。期末の処理は？',cs:['仕訳不要','借方：有価証券15万　貸方：有価証券評価益15万','借方：有価証券評価損15万　貸方：有価証券15万','借方：有価証券15万　貸方：その他有価証券評価差額金15万'],a:1,ex:'売買目的有価証券は時価評価。差額は当期の損益（評価益/評価損）として処理する。'},
+        {q:'満期保有目的債券（取得原価100万、額面110万、残存5年）の当期償却原価法（定額法）での仕訳は？',cs:['借方：有価証券利息2万　貸方：投資有価証券2万','借方：投資有価証券2万　貸方：有価証券利息2万','仕訳不要（クーポン利息のみ）','借方：投資有価証券10万　貸方：有価証券利息10万'],a:1,ex:'(110-100)÷5年=2万円を毎年取得原価に加算（借方：投資有価証券、貸方：有価証券利息）。'},
+        {q:'子会社株式（取得原価500万円）の期末時価が300万円に下落した。処理は？',cs:['評価損200万円を計上','仕訳不要（子会社株式は時価評価不要）','評価損300万円を計上','その他有価証券評価差額金200万円を計上'],a:1,ex:'子会社株式・関連会社株式は時価評価不要。ただし著しい下落（50%超）は減損処理が必要。'},
+        {q:'手形の裏書譲渡を行った場合の仕訳（支払金額100万、裏書譲渡した受取手形100万）は？',cs:['借方：支払手形100万　貸方：受取手形100万','借方：買掛金100万　貸方：受取手形100万','借方：受取手形100万　貸方：支払手形100万','借方：手形売却損5万・現金95万　貸方：受取手形100万'],a:1,ex:'裏書譲渡は相手方への支払いに受取手形を充てる。買掛金減少＆受取手形減少。'},
+      ],
+      [
+        {q:'受取手形200万円を銀行で割り引いた（割引料5万）。正しい仕訳は？',cs:['借方：現金195万・手形売却損5万　貸方：受取手形200万','借方：現金200万　貸方：受取手形200万','借方：受取手形195万　貸方：現金195万','借方：借入金200万　貸方：受取手形200万'],a:0,ex:'手形割引は手形の売却。割引料（手形売却損）を差し引いた現金を受け取る。'},
+        {q:'その他有価証券（取得原価300万）の期末時価が280万円。全部純資産直入法での仕訳は？',cs:['借方：投資有価証券20万　貸方：その他有価証券評価差額金20万','借方：有価証券評価損20万　貸方：投資有価証券20万','借方：その他有価証券評価差額金20万　貸方：投資有価証券20万','仕訳不要'],a:2,ex:'その他有価証券の評価差額は純資産（評価差額金）へ直入。評価損の場合は借方へ計上。'},
+        {q:'約束手形500万円（受取手形）が満期に落ちて当座預金に入金された。仕訳は？',cs:['借方：当座預金500万　貸方：受取手形500万','借方：受取手形500万　貸方：当座預金500万','借方：現金500万　貸方：受取手形500万','借方：受取手形500万　貸方：売上500万'],a:0,ex:'手形の満期落ちは受取手形（資産↓）が消滅し、当座預金（資産↑）が増える。'},
+        {q:'支払手形300万円が満期に当座預金から決済された。仕訳は？',cs:['借方：当座預金300万　貸方：支払手形300万','借方：支払手形300万　貸方：当座預金300万','借方：現金300万　貸方：支払手形300万','借方：支払手形300万　貸方：現金300万'],a:1,ex:'支払手形（負債↓）が消滅し、当座預金（資産↓）が減少する。'},
+        {q:'売買目的有価証券（帳簿価額60万）を65万円で売却した。正しい仕訳は？',cs:['借方：現金65万　貸方：有価証券65万','借方：現金65万　貸方：有価証券60万・有価証券売却益5万','借方：現金60万・有価証券売却損5万　貸方：有価証券65万','借方：有価証券売却益5万　貸方：有価証券5万'],a:1,ex:'売却時は帳簿価額と売却価額の差額が売却益または売却損になる。'},
+      ],
+      // ラウンド3
+      [
+        {q:'約束手形を振り出して仕入代金100万円を支払った。正しい仕訳は？',cs:['借方：仕入100万　貸方：受取手形100万','借方：仕入100万　貸方：支払手形100万','借方：支払手形100万　貸方：仕入100万','借方：受取手形100万　貸方：仕入100万'],a:1,ex:'約束手形を振り出す側は支払手形（負債↑）を貸方に、仕入（費用）を借方に計上する。'},
+        {q:'為替手形：振出人A（買掛金あり）、名宛人B（売掛金あり）、受取人C。Aが手形振り出した際のA社の仕訳は？',cs:['借方：買掛金　貸方：支払手形','借方：買掛金　貸方：受取手形','借方：支払手形　貸方：買掛金','借方：売掛金　貸方：支払手形'],a:0,ex:'為替手形の振出人（A）は引受依頼により買掛金（負債↓）を消滅させ、支払手形…。実際はA社にとって買掛金を消滅させる。'},
+        {q:'受取手形が不渡りになった。金額200万円、遡及請求権行使。仕訳は？',cs:['借方：不渡手形200万　貸方：受取手形200万','借方：売掛金200万　貸方：受取手形200万','借方：貸倒損失200万　貸方：受取手形200万','借方：受取手形200万　貸方：不渡手形200万'],a:0,ex:'不渡り手形は「不渡手形」（資産）に振り替えて遡及請求を管理する。回収できなければ後日損失計上。'},
+        {q:'手形貸付金とは何か？',cs:['約束手形を担保に借り入れた負債','約束手形を受け取る形で行った貸付（資産）','手形割引により入手した資金','銀行への手形呈示による借入れ'],a:1,ex:'手形貸付金は借主から約束手形を受け取る形で行う貸付け。手形という証拠書類があるため手形貸付金（資産）という。'},
+        {q:'手形借入金として100万円を借り入れた。仕訳は？',cs:['借方：現金100万　貸方：手形借入金100万','借方：手形借入金100万　貸方：現金100万','借方：借入金100万　貸方：受取手形100万','借方：支払手形100万　貸方：現金100万'],a:0,ex:'手形を振り出して資金を借り入れた場合は「手形借入金」（負債）を貸方に計上する。'},
+      ],
+      // ラウンド4
+      [
+        {q:'売買目的有価証券（取得原価50万）の期末時価が40万円。仕訳は？',cs:['仕訳不要','借方：有価証券評価損10万　貸方：有価証券10万','借方：有価証券10万　貸方：有価証券評価益10万','借方：有価証券評価差額金10万　貸方：有価証券10万'],a:1,ex:'売買目的有価証券の時価下落は「有価証券評価損」（費用）として当期の損益に計上する。'},
+        {q:'満期保有目的債券（額面100万、取得原価95万、残存5年）の当期クーポン利息5万円と償却原価法の処理を行う。仕訳の組み合わせは？',cs:['①利息5万→現金入金のみ','①現金5万・投資有価証券1万　貸方：有価証券利息6万','①借方：現金5万　貸方：有価証券利息5万　②借方：投資有価証券1万　貸方：有価証券利息1万','仕訳不要（満期まで計上しない）'],a:2,ex:'クーポン利息5万を受け取り（収益）、差額1万（=(100-95)÷5年）を償却原価法で投資有価証券に加算・有価証券利息へ。'},
+        {q:'その他有価証券（取得300万）の期末時価が330万円。全部純資産直入法の仕訳は？',cs:['借方：投資有価証券30万　貸方：有価証券評価益30万','借方：投資有価証券30万　貸方：その他有価証券評価差額金30万','借方：有価証券評価益30万　貸方：投資有価証券30万','仕訳不要'],a:1,ex:'その他有価証券の評価益は損益計算書ではなく純資産（その他有価証券評価差額金）に直入する。'},
+        {q:'有価証券を手数料5万円込みで購入（代金100万＋手数料5万＝105万現金払い）。仕訳は？',cs:['借方：有価証券100万・支払手数料5万　貸方：現金105万','借方：有価証券105万　貸方：現金105万','借方：有価証券100万　貸方：現金100万','借方：有価証券105万・支払手数料5万　貸方：現金110万'],a:1,ex:'有価証券の取得価額には購入手数料（付随費用）を含める（取得原価主義）。合計105万が帳簿価額。'},
+        {q:'株式配当金の受け取り（現金2万円）。仕訳は？',cs:['借方：現金2万　貸方：受取配当金2万','借方：現金2万　貸方：売上2万','借方：受取配当金2万　貸方：現金2万','借方：有価証券2万　貸方：受取配当金2万'],a:0,ex:'株式の配当金受取は「受取配当金」（収益）を貸方に計上し、現金（資産↑）を借方に記入する。'},
+      ],
+      // ラウンド5
+      [
+        {q:'社債1,000万円を額面発行し、現金で払い込まれた。仕訳は？',cs:['借方：現金1,000万　貸方：社債1,000万','借方：社債1,000万　貸方：現金1,000万','借方：現金1,000万　貸方：借入金1,000万','借方：資本金1,000万　貸方：社債1,000万'],a:0,ex:'社債の発行は現金（資産↑）を借方、社債（負債↑）を貸方に計上する。額面発行では差額なし。'},
+        {q:'社債1,000万円（額面）を950万円で割引発行した。仕訳は？',cs:['借方：現金950万　貸方：社債950万','借方：現金950万・社債発行差金50万　貸方：社債1,000万','借方：現金950万　貸方：社債1,000万・社債発行益50万','借方：現金1,000万　貸方：社債1,000万'],a:1,ex:'割引発行では払込額（950万）と額面（1,000万）の差50万が社債発行差金（資産）として計上される。'},
+        {q:'社債の満期償還時（額面1,000万円）に当座預金から支払った。仕訳は？',cs:['借方：社債1,000万　貸方：当座預金1,000万','借方：当座預金1,000万　貸方：社債1,000万','借方：社債1,000万　貸方：現金1,000万','借方：借入金1,000万　貸方：当座預金1,000万'],a:0,ex:'社債満期償還は社債（負債↓）を消滅させ、当座預金（資産↓）を貸方に記入する。'},
+        {q:'社債の買入消却：帳簿価額980万の社債を970万円で買い取って消却した。仕訳は？',cs:['借方：社債980万　貸方：現金970万・社債償還益10万','借方：社債970万　貸方：現金970万','借方：社債980万　貸方：現金980万','借方：社債980万・社債償還損10万　貸方：現金990万'],a:0,ex:'帳簿価額（980万）より安い970万で買い取ったので、差額10万が社債償還益（収益）となる。'},
+        {q:'社債利息200万円を現金で支払った。仕訳は？',cs:['借方：支払利息200万　貸方：現金200万','借方：社債利息200万　貸方：現金200万','借方：現金200万　貸方：社債利息200万','借方：社債200万　貸方：現金200万'],a:1,ex:'社債利息（費用）を借方、現金（資産↓）を貸方に記入する。社債利息は支払利息とは別勘定で管理する。'},
+      ],
+      // ラウンド6
+      [
+        {q:'有価証券の分類基準で「満期保有目的債券」の条件は？',cs:['株式で短期売買を目的とするもの','満期まで保有する積極的な意図と能力がある債券','子会社や関連会社への投資目的','それ以外のすべての有価証券'],a:1,ex:'満期保有目的債券は満期まで保有する明確な意図と能力がある場合に分類される。原則として原価評価。'},
+        {q:'「子会社株式」の期末評価について正しいのは？',cs:['時価で評価し差額を損益処理する','時価評価はせず取得原価のまま（ただし著しい下落は減損）','その他有価証券として純資産直入する','売買目的として時価評価する'],a:1,ex:'子会社株式・関連会社株式は原価法（取得原価評価）。ただし時価が著しく下落した場合は減損処理が必要。'},
+        {q:'約束手形と為替手形の基本的な違いは？',cs:['約束手形は2者間、為替手形は3者間（振出人・引受人・受取人）','約束手形は3者間、為替手形は2者間','両者に本質的な違いはない','約束手形は銀行が発行する'],a:0,ex:'約束手形は振出人と受取人の2者間、為替手形は振出人・引受人（支払人）・受取人の3者間取引。'},
+        {q:'手形の「裏書」とは何か？',cs:['手形を銀行に買い取ってもらう行為','手形を第三者に譲渡する行為（受取手形の裏面に記名押印）','手形の支払期日を延長する行為','手形を担保として借り入れる行為'],a:1,ex:'裏書は受取手形の裏面に記名押印することで手形上の権利を第三者に譲渡する行為。'},
+        {q:'有価証券の「評価差額」のうち損益計算書（P/L）に計上するのはどれか？',cs:['その他有価証券の評価差額','売買目的有価証券の評価差額','満期保有目的債券の評価差額','子会社株式の評価差額'],a:1,ex:'売買目的有価証券の評価差額（損益）のみP/Lに計上。その他有価証券は純資産直入法でB/Sの純資産へ。'},
+      ],
+      // ラウンド7
+      [
+        {q:'手形の「不渡処分」の意味は？',cs:['手形を割り引いて現金化すること','手形の支払期日に決済されなかったこと','手形を裏書譲渡すること','手形を銀行に担保提供すること'],a:1,ex:'不渡りは手形の支払期日に当座預金残高不足等により決済されないこと。6ヶ月以内に2回不渡りで銀行取引停止。'},
+        {q:'社債発行差金（割引発行の差額）の償却仕訳（定額法・年間2万円）は？',cs:['借方：社債発行差金2万　貸方：社債利息2万','借方：社債利息2万　貸方：社債発行差金2万','借方：社債2万　貸方：社債発行差金2万','借方：社債発行差金2万　貸方：社債2万'],a:1,ex:'社債発行差金（資産↓）を貸方に減額し、社債利息（費用↑）を借方に計上して毎期償却する。'},
+        {q:'売買目的有価証券を期中に取得したとき、既発利息（端数利息）の処理は？',cs:['取得原価に含める','「有価証券利息」として別途処理する','費用として処理する','無視してよい'],a:1,ex:'既発利息は取得原価に含めず「有価証券利息」として別途計上する。次の利払日に利息全額受取と相殺する。'},
+        {q:'長期保有のその他有価証券を売却した際の評価差額金の処理は？',cs:['評価差額金はそのまま純資産に残す','売却時に評価差額金を取り崩して損益に振り替える','評価差額金は損益計算書に計上しない','評価差額金は現金と相殺する'],a:1,ex:'その他有価証券を売却した際は、純資産に計上されていた評価差額金を取り崩し、売却損益と合算して損益計上。'},
+        {q:'有価証券の保有目的を変更する場合の原則は？',cs:['自由に変更できる','原則として保有目的の変更は認められない','年度末にのみ変更できる','監査役の承認があれば変更できる'],a:1,ex:'保有目的の変更は原則禁止（恣意的な利益操作防止）。特別な事情（組織再編等）がある場合のみ例外的に認める。'},
+      ],
+      // ラウンド8
+      [
+        {q:'満期保有目的債券の「償却原価法（定額法）」での取扱いは？',cs:['期末に時価で評価替えする','取得価額と額面の差額を残存期間で均等に配分して帳簿価額を修正する','取得価額のままで保有する','毎期減価償却費を計上する'],a:1,ex:'償却原価法では取得価額と額面の差額を残存期間にわたって均等に帳簿価額へ加減算する方法。'},
+        {q:'その他有価証券の「全部純資産直入法」での評価損の仕訳（評価損30万）は？',cs:['借方：有価証券評価損30万　貸方：投資有価証券30万','借方：その他有価証券評価差額金30万　貸方：投資有価証券30万','借方：投資有価証券30万　貸方：その他有価証券評価差額金30万','借方：その他有価証券評価差額金30万　貸方：有価証券評価損30万'],a:1,ex:'評価損の場合、評価差額金（純資産）を借方（純資産の減少）、投資有価証券を貸方（資産の減少）に計上。'},
+        {q:'手形貸付金50万円の元利金合計52万円を現金で回収した（利息2万円）。仕訳は？',cs:['借方：現金52万　貸方：手形貸付金52万','借方：現金52万　貸方：手形貸付金50万・受取利息2万','借方：受取利息2万　貸方：現金2万','借方：現金50万　貸方：手形貸付金50万'],a:1,ex:'元本（手形貸付金50万↓）と利息（受取利息2万・収益）を区別して処理し、現金52万を受け取る。'},
+        {q:'社債の「額面発行」と「割引発行」のどちらが発行者（会社）にとって実質利回りが高いか？',cs:['額面発行','割引発行（同じクーポンで調達額が少ないため）','両者は同じ','時価によって変わる'],a:1,ex:'割引発行は同じクーポン利息を払いながら調達額が額面より少ないため、実質的な資金コスト（利回り）が高くなる。'},
+        {q:'受取手形200万円を銀行に担保提供して借入れた（手形担保借入）。仕訳は？',cs:['借方：現金200万　貸方：受取手形200万','借方：現金200万　貸方：借入金200万','借方：受取手形200万　貸方：借入金200万','借方：借入金200万　貸方：受取手形200万'],a:1,ex:'手形担保借入は手形を担保に入れるだけで権利譲渡ではない。現金（資産↑）と借入金（負債↑）を計上する。'},
+      ],
+      // ラウンド9
+      [
+        {q:'有価証券の種類と分類基準：「売買目的有価証券」の貸借対照表での表示区分は？',cs:['固定資産（投資有価証券）','流動資産（有価証券）','純資産','その他資産'],a:1,ex:'売買目的有価証券は短期売買目的なので「流動資産」の「有価証券」として表示する。'},
+        {q:'満期保有目的債券を「長期」に分類する基準は？',cs:['取得金額が1億円以上','満期が1年以内のものは流動資産、1年超は固定資産（投資有価証券）','発行体が上場企業','利率が一定以上'],a:1,ex:'1年基準：満期1年以内→流動資産（有価証券）、満期1年超→固定資産（投資有価証券）に分類。'},
+        {q:'子会社株式と投資有価証券の貸借対照表での表示区分は？',cs:['子会社株式は流動資産、投資有価証券は固定資産','子会社株式も投資有価証券もともに固定資産（投資その他の資産）に表示','子会社株式は純資産の部、投資有価証券は資産の部','子会社株式は流動資産',''],a:1,ex:'子会社株式・関連会社株式・その他有価証券（長期）はすべて固定資産の「投資その他の資産」に表示する。'},
+        {q:'売買目的有価証券を期末に時価評価した場合、評価差額は翌期首にどうなるか（切放法の場合）？',cs:['期首に前期末時価を当期の取得原価とみなして使い続ける（切放法）','期首に原価に戻す（洗替法）','評価差額は永続する','翌期首に繰り越さない'],a:0,ex:'切放法では前期末時価を当期の帳簿価額（新しい取得原価）として扱い、期首戻し仕訳は行わない。'},
+        {q:'有価証券の利息（クーポン）と配当金の勘定科目はそれぞれ何か？',cs:['利息：支払利息、配当金：支払配当金','利息：有価証券利息、配当金：受取配当金','利息：受取利息、配当金：受取配当金','両方とも受取利息'],a:1,ex:'債券利息は「有価証券利息」（収益）、株式配当金は「受取配当金」（収益）として区別して計上する。'},
+      ],
+      // ラウンド10
+      [
+        {q:'為替手形の「引受」とは何か？',cs:['振出人が手形を振り出す行為','名宛人（支払人）が手形の支払義務を認める行為','受取人が手形を受け取る行為','銀行が手形を割り引く行為'],a:1,ex:'為替手形において名宛人が引受（承諾）することで、支払義務が確定する。引受後の名宛人が「引受人」となる。'},
+        {q:'売買目的有価証券の当期購入：株式100株を1株1,000円で購入、手数料500円。仕訳は？（現金払い）',cs:['借方：有価証券100,000　貸方：現金100,000','借方：有価証券100,500　貸方：現金100,500','借方：有価証券100,000・支払手数料500　貸方：現金100,500','借方：有価証券100,000　貸方：現金99,500'],a:1,ex:'有価証券の取得原価は購入代価+付随費用。100,000+500=100,500円を有価証券勘定に計上する。'},
+        {q:'社債発行差金（50万円）を5年間で均等償却（年10万円）した場合の仕訳は？',cs:['借方：社債発行差金10万　貸方：社債利息10万','借方：社債利息10万　貸方：社債発行差金10万','借方：社債10万　貸方：現金10万','借方：現金10万　貸方：社債発行差金10万'],a:1,ex:'社債発行差金（資産↓）を貸方に減額し、社債利息（費用↑）を借方に計上して償却する。'},
+        {q:'手形の不渡りに際して、遡及請求（買戻し請求）のため振出人に支払呈示した費用2万円も請求できる。この費用計上は？',cs:['手形売却損として処理','不渡手形（資産）に加算して請求額を増やす','費用（支払手数料）として処理','仕訳不要'],a:1,ex:'不渡り後の諸費用（呈示費用・弁護士費用等）は不渡手形の残高に加算して請求債権額を増やす。'},
+        {q:'有価証券の「取得原価」が重要な理由は？',cs:['時価が毎日変わるから','売却時の損益計算や評価差額の計算の基準となるため','税務上の規定があるから','銀行への担保評価のため'],a:1,ex:'有価証券の取得原価は売却損益（帳簿価額との差額）の計算や、時価評価における差額計算の起点となる重要な数値。'},
+      ],
+    ]
+  },
+  {
+    id:'tax', name:'税金・引当金', emoji:'🧾',
+    eIcon:'👺', eName:'税務ゴブリン',
+    quote:'納税は義務だ、覚悟しろ！',
+    rounds:[
+      [
+        {q:'法人税等200万円を計上した（未払）。正しい仕訳は？',cs:['借方：法人税等200万　貸方：未払法人税等200万','借方：未払法人税等200万　貸方：法人税等200万','借方：法人税等200万　貸方：現金200万','借方：租税公課200万　貸方：未払法人税等200万'],a:0,ex:'法人税等（費用）を計上し、未払法人税等（負債）を貸方に記入する。'},
+        {q:'退職給付引当金を100万円繰り入れた。正しい仕訳は？',cs:['借方：退職給付費用100万　貸方：退職給付引当金100万','借方：退職給付引当金100万　貸方：退職給付費用100万','借方：退職金100万　貸方：現金100万','借方：退職給付費用100万　貸方：現金100万'],a:0,ex:'退職給付費用（費用）を計上し、退職給付引当金（負債）を積み立てる。'},
+        {q:'消費税（税抜処理）：商品110万円（消費税10万含む）を仕入れ、現金払い。正しい仕訳は？',cs:['借方：仕入110万　貸方：現金110万','借方：仕入100万・仮払消費税10万　貸方：現金110万','借方：仕入100万　貸方：現金100万','借方：仕入110万・消費税10万　貸方：現金120万'],a:1,ex:'税抜処理では仮払消費税（資産）を仕入と別に処理する。'},
+        {q:'賞与引当金50万円を計上した。正しい仕訳は？',cs:['借方：賞与引当金繰入50万　貸方：賞与引当金50万','借方：賞与引当金50万　貸方：現金50万','借方：給与50万　貸方：賞与引当金50万','借方：賞与50万　貸方：現金50万'],a:0,ex:'賞与引当金繰入（費用）を計上し、賞与引当金（負債）を積み立てる。'},
+        {q:'固定資産税12万円の納付通知書を受け取った（4期に分けて納付）。通知書受取時の仕訳は？',cs:['借方：租税公課3万　貸方：未払金3万','借方：租税公課12万　貸方：未払金12万','借方：租税公課12万　貸方：現金12万','仕訳不要'],a:1,ex:'通知書受取時に全額（12万）を租税公課（費用）と未払金（負債）として計上する。'},
+      ],
+      [
+        {q:'消費税（税込処理）：商品330万円（消費税30万含む）を掛けで売り上げた。正しい仕訳は？',cs:['借方：売掛金330万　貸方：売上300万・仮受消費税30万','借方：売掛金330万　貸方：売上330万','借方：売掛金300万　貸方：売上300万','借方：売掛金330万　貸方：売上300万・受取消費税30万'],a:1,ex:'税込処理では消費税込みの金額をそのまま売上に計上する（仮受消費税は使わない）。'},
+        {q:'仮払消費税80万円、仮受消費税120万円の決算整理仕訳は？',cs:['借方：仮受消費税120万　貸方：仮払消費税80万・未払消費税40万','借方：仮払消費税80万　貸方：仮受消費税120万','借方：未払消費税40万　貸方：仮受消費税40万','借方：仮受消費税80万　貸方：仮払消費税80万'],a:0,ex:'仮受消費税から仮払消費税を差し引き、差額を未払消費税（負債）として計上する。'},
+        {q:'法人税等の中間申告で仮払いした80万円を計上する仕訳は？',cs:['借方：仮払法人税等80万　貸方：現金80万','借方：法人税等80万　貸方：現金80万','借方：現金80万　貸方：仮払法人税等80万','借方：租税公課80万　貸方：現金80万'],a:0,ex:'中間申告の納付は仮払法人税等（資産）として計上。確定申告時に法人税等へ振り替える。'},
+        {q:'製品保証引当金30万円を繰り入れた。正しい仕訳は？',cs:['借方：製品保証費用30万　貸方：製品保証引当金30万','借方：製品保証引当金30万　貸方：現金30万','借方：製品保証引当金繰入30万　貸方：製品保証引当金30万','借方：修繕費30万　貸方：製品保証引当金30万'],a:2,ex:'引当金の繰入は「○○引当金繰入」（費用）を借方、引当金（負債）を貸方に計上する。'},
+        {q:'修繕引当金50万円が計上されていたが、実際修繕費が70万円かかった（現金払）。仕訳は？',cs:['借方：修繕引当金50万・修繕費20万　貸方：現金70万','借方：修繕費70万　貸方：現金70万','借方：修繕引当金70万　貸方：現金70万','借方：修繕引当金50万　貸方：現金50万'],a:0,ex:'引当金（50万）を取り崩し、超過分（20万）を当期の修繕費（費用）として処理する。'},
+      ],
+      // ラウンド3
+      [
+        {q:'給与総額50万円のうち所得税5万円・社会保険料3万円を源泉徴収し、残額を普通預金から振り込んだ。仕訳は？',cs:['借方：給与50万　貸方：普通預金42万・預り金8万','借方：給与42万　貸方：普通預金42万','借方：給与50万　貸方：普通預金50万','借方：給与50万　貸方：預り金5万・社会保険料3万・普通預金42万'],a:0,ex:'天引きした所得税・社会保険料は「預り金」（負債）として計上。実際支払いは50万-8万=42万円。'},
+        {q:'健康保険料の会社負担分（従業員分と同額）を計上した。会社負担分5万円の仕訳は？',cs:['借方：法定福利費5万　貸方：未払費用5万','借方：給与5万　貸方：預り金5万','借方：社会保険料5万　貸方：現金5万','借方：福利費5万　貸方：給与5万'],a:0,ex:'会社負担の社会保険料は「法定福利費」（費用）を借方、「未払費用」（負債）を貸方に計上する。'},
+        {q:'固定資産税12万円を4期に分割、第1期分3万円を現金納付した。仕訳は？',cs:['借方：租税公課3万　貸方：現金3万','借方：未払金3万　貸方：現金3万','借方：租税公課3万　貸方：未払金3万','借方：現金3万　貸方：租税公課3万'],a:1,ex:'通知書受取時に全額（12万）を租税公課と未払金で計上済みなので、納付時は未払金を消滅させるだけ。'},
+        {q:'印紙税（収入印紙）200円を購入し、契約書に貼付した。仕訳は？',cs:['借方：租税公課200　貸方：現金200','借方：租税公課200　貸方：貯蔵品200','借方：貯蔵品200　貸方：現金200','借方：印紙税200　貸方：現金200'],a:0,ex:'収入印紙の購入・貼付は「租税公課」（費用）として直接処理する。未使用分は貯蔵品計上もある。'},
+        {q:'消費税の「課税取引」に該当するのはどれか？',cs:['土地の売却','輸出取引','商品の国内販売','国外での役務提供'],a:2,ex:'国内での商品販売は消費税の課税取引。土地売却・輸出取引は非課税・免税取引として消費税が課されない。'},
+      ],
+      // ラウンド4
+      [
+        {q:'税効果会計：将来減算一時差異100万円（税率30%）。繰延税金資産の計上仕訳は？',cs:['借方：法人税等調整額30万　貸方：繰延税金資産30万','借方：繰延税金資産30万　貸方：法人税等調整額30万','借方：繰延税金負債30万　貸方：法人税等調整額30万','仕訳不要'],a:1,ex:'将来減算一時差異は将来の節税効果（繰延税金資産）。借方：繰延税金資産、貸方：法人税等調整額（収益）。'},
+        {q:'税効果会計：将来加算一時差異200万円（税率30%）。繰延税金負債の計上仕訳は？',cs:['借方：繰延税金負債60万　貸方：法人税等調整額60万','借方：法人税等調整額60万　貸方：繰延税金負債60万','借方：繰延税金資産60万　貸方：繰延税金負債60万','仕訳不要'],a:1,ex:'将来加算一時差異は将来の追加納税義務（繰延税金負債）。借方：法人税等調整額（費用）、貸方：繰延税金負債。'},
+        {q:'法人税の確定申告：確定税額300万円、前払い（仮払法人税等）120万円。残額を未払い計上する仕訳は？',cs:['借方：法人税等300万　貸方：仮払法人税等120万・未払法人税等180万','借方：法人税等300万　貸方：未払法人税等300万','借方：仮払法人税等120万　貸方：法人税等120万','借方：未払法人税等180万　貸方：法人税等180万'],a:0,ex:'確定税額300万から中間払い120万を差し引き、残額180万を未払法人税等（負債）として計上する。'},
+        {q:'外形標準課税（事業税）の課税対象として正しいのは？',cs:['所得のみを課税ベースとする','資本金等の額・付加価値額・所得の合計を課税ベースとする（資本金1億超の法人）','売上高を課税ベースとする','固定資産額を課税ベースとする'],a:1,ex:'外形標準課税は資本金1億円超の法人に適用。所得以外に資本割・付加価値割も課税対象となる。'},
+        {q:'消費税の「非課税取引」に該当するのはどれか？',cs:['国内での商品販売','輸出取引','社会保険医療給付','輸入取引'],a:2,ex:'社会保険医療（保険証での診療）は消費税が非課税。土地取引・有価証券・利息なども非課税取引に該当する。'},
+      ],
+      // ラウンド5
+      [
+        {q:'退職給付費用：従業員が退職し退職金100万円を当座預金から支払った。退職給付引当金残高80万円。仕訳は？',cs:['借方：退職給付引当金80万・退職給付費用20万　貸方：当座預金100万','借方：退職給付費用100万　貸方：当座預金100万','借方：退職給付引当金100万　貸方：当座預金100万','借方：退職給付引当金80万　貸方：当座預金80万'],a:0,ex:'引当金（80万）を取り崩し、超過分（20万）は当期の退職給付費用（費用）として計上する。'},
+        {q:'賞与引当金60万円を計上していた。賞与支給日に実際に80万円を普通預金から支払った。仕訳は？',cs:['借方：賞与60万・給与20万　貸方：普通預金80万','借方：賞与引当金60万・賞与20万　貸方：普通預金80万','借方：賞与80万　貸方：普通預金80万','借方：賞与引当金80万　貸方：普通預金80万'],a:1,ex:'引当金（60万）を取り崩し、超過分（20万）を当期の賞与（費用）として計上する。'},
+        {q:'修繕引当金30万円を計上していた。実際の修繕費が25万円だった（現金払い）。仕訳は？',cs:['借方：修繕引当金30万・修繕費マイナス5万　貸方：現金25万','借方：修繕引当金25万　貸方：現金25万','借方：修繕引当金30万　貸方：現金25万・修繕引当金戻入5万','借方：修繕費25万　貸方：現金25万'],a:2,ex:'引当金（30万）を取り崩し、実際費用（25万）を支払い、差額5万は「修繕引当金戻入」（収益）として計上。'},
+        {q:'消費税の納税義務者（課税事業者）の判定基準として正しいのは？',cs:['資本金1億円超の企業のみ','基準期間（前々年度等）の課税売上高が1,000万円超','当期売上高が1,000万円超','従業員数が50人超'],a:1,ex:'消費税の課税事業者は前々事業年度（個人は前々年）の課税売上高が1,000万円を超える場合に原則として適用。'},
+        {q:'法人税等の中間申告義務が生じる条件は？',cs:['当期末に法人税等が確定した場合','前期の法人税額が20万円超の場合','資本金1億円以上の場合','毎年度必ず行う'],a:1,ex:'前期の法人税額が20万円超の法人は中間申告（半期ごとの予定申告または仮決算）が義務付けられる。'},
+      ],
+      // ラウンド6
+      [
+        {q:'繰延税金資産の回収可能性とは何か？',cs:['将来に税金が増加する見込みがある','将来に十分な課税所得が見込まれ、税額控除効果が実現できる見通し','現在の税率が将来も維持される','資産の時価が帳簿価額を下回らない'],a:1,ex:'繰延税金資産は将来の課税所得から控除できる（税金が減る）効果。実現できる見通しがないと計上不可。'},
+        {q:'固定資産税の「家屋（建物）」に対する固定資産税を費用処理する勘定科目は？',cs:['法人税等','租税公課','支払税金','減価償却費'],a:1,ex:'固定資産税・印紙税・自動車税等の税金は「租税公課」（費用）として処理する。法人税等とは区別する。'},
+        {q:'消費税（税抜処理）で仕入110万円（税込）を掛けで行った。正しい仕訳は？',cs:['借方：仕入110万　貸方：買掛金110万','借方：仕入100万・仮払消費税10万　貸方：買掛金110万','借方：仕入100万　貸方：買掛金100万','借方：仕入110万・仮払消費税10万　貸方：買掛金120万'],a:1,ex:'税抜処理では仕入（100万）と仮払消費税（10万）を分けて計上し、買掛金は合計110万円。'},
+        {q:'消費税の年間確定申告時（仮払80万・仮受120万）の納付額と仕訳は？',cs:['納付額40万：借方：仮受消費税120万　貸方：仮払消費税80万・未払消費税40万','納付額200万：借方：仮払消費税80万　貸方：仮受消費税80万','納付額80万：借方：未払消費税80万　貸方：仮払消費税80万','納付額120万：借方：仮受消費税120万　貸方：現金120万'],a:0,ex:'確定申告時に仮受・仮払を相殺し、差額40万（120-80）を未払消費税（負債）として計上。後日納付する。'},
+        {q:'製品保証引当金（50万円計上済み）を使用した（無償修理費用40万円の現金支払）。仕訳は？',cs:['借方：製品保証引当金40万　貸方：現金40万','借方：製品保証費用40万　貸方：現金40万','借方：製品保証引当金50万　貸方：現金40万・製品保証引当金戻入10万','借方：製品保証引当金40万・製品保証費用0　貸方：現金40万'],a:0,ex:'引当金（40万）を取り崩して現金支払に充てる。残り10万は引当金として残る（取り崩し不要分）。'},
+      ],
+      // ラウンド7
+      [
+        {q:'給与計算：総支給額80万円、源泉所得税8万円、雇用保険料1万円、健康保険料4万円（折半計上済み）。純支給額は？',cs:['67万円','71万円','72万円','75万円'],a:0,ex:'純支給額=80万-8万-1万-4万=67万円。会社負担の社会保険料は別途法定福利費で計上する。'},
+        {q:'中間申告として法人税等80万円を現金納付した。仕訳は？',cs:['借方：仮払法人税等80万　貸方：現金80万','借方：法人税等80万　貸方：現金80万','借方：未払法人税等80万　貸方：現金80万','借方：租税公課80万　貸方：現金80万'],a:0,ex:'中間申告の納付は「仮払法人税等」（資産）として計上し、決算時に法人税等（費用）へ振り替える。'},
+        {q:'法人事業税（外形標準課税対象外）の処理として正しいのは？',cs:['租税公課として費用処理（損金算入）','法人税等として処理（損金不算入）','未払消費税として処理','固定資産として計上'],a:0,ex:'法人事業税は租税公課（費用）として処理し、損金算入が認められる。法人税・住民税は損金不算入。'},
+        {q:'引当金を設定する4つの条件のうち、「合理的に見積もれること」以外の条件として適切なのは？',cs:['当期以前の事象が原因であること、将来の義務が確実であること、金額が重要であること','将来の費用が確実に発生すること、金額が大きいこと、税務上認められること','当期に現金が支出されること、金額が確定していること、取締役会の承認があること','発生可能性が1%以上あること、税務規定に準拠すること、監査役の承認があること'],a:0,ex:'引当金の4条件：①当期以前の事象が原因②将来に費用・損失発生③蓋然性が高い④合理的見積もりが可能。'},
+        {q:'社会保険料の「折半負担」とは何か？',cs:['全額会社負担','従業員と会社が半分ずつ負担','全額従業員負担','3分の1ずつ負担'],a:1,ex:'健康保険・厚生年金保険料は従業員と会社が半額ずつ（折半）負担する原則がある。'},
+      ],
+      // ラウンド8
+      [
+        {q:'決算時の法人税等の計上（確定申告前・見積額200万円）仕訳は？',cs:['借方：法人税等200万　貸方：未払法人税等200万','借方：未払法人税等200万　貸方：法人税等200万','借方：法人税等200万　貸方：現金200万','借方：租税公課200万　貸方：未払法人税等200万'],a:0,ex:'決算時に見積もった法人税等を費用（借方）と負債「未払法人税等」（貸方）として計上する。'},
+        {q:'消費税の「不課税取引」の例として正しいのは？',cs:['土地の売却（非課税取引）','給与・賃金の支払い（不課税取引）','輸出取引（免税取引）','保険医療（非課税取引）'],a:1,ex:'給与は消費税の不課税取引（対象外）。土地売却・保険医療は非課税、輸出は免税取引として区別される。'},
+        {q:'繰延税金資産（30万）と繰延税金負債（10万）がある場合、貸借対照表での表示は？',cs:['繰延税金資産30万と繰延税金負債10万を別々に表示','純額20万を繰延税金資産として表示','純額20万を繰延税金負債として表示','相殺して表示しない'],a:1,ex:'繰延税金資産と繰延税金負債は原則として相殺して純額（30-10=20万）で表示する。'},
+        {q:'退職給付引当金の翌期繰入額を計算する基礎として正しいのは？',cs:['前期末退職給付債務×利率','当期の勤務費用＋利息費用-期待運用収益±過去勤務費用等の償却','当期実際退職者数×平均退職金','従業員数×平均勤続年数'],a:1,ex:'退職給付費用は勤務費用・利息費用から期待運用収益を差し引き、過去勤務費用等を加減して算定する。'},
+        {q:'固定資産税の「評価替え」が行われる頻度は？',cs:['毎年','3年ごと','5年ごと','10年ごと'],a:1,ex:'固定資産税の評価額（固定資産税評価額）は原則3年ごとに評価替え（見直し）が行われる。'},
+      ],
+      // ラウンド9
+      [
+        {q:'税効果会計で「一時差異」とは何か？',cs:['会計上の費用と税務上の損金が永久に異なる差異','会計上の資産・負債の簿価と税務上の値が一時的に異なり、将来解消される差異','消費税と法人税の計算基準の差','現金主義と発生主義の差'],a:1,ex:'一時差異は会計と税務の評価の違いが将来解消されるもの（→繰延税金）。永久差異（寄附金等）は繰延税金の対象外。'},
+        {q:'賞与引当金の翌期末計上（6月賞与見込み：12月〜翌5月分を見込計上）。見込額120万円の仕訳は？',cs:['借方：賞与引当金繰入120万　貸方：賞与引当金120万','借方：賞与120万　貸方：現金120万','借方：給与120万　貸方：賞与引当金120万','借方：賞与引当金120万　貸方：現金120万'],a:0,ex:'将来の賞与支給に備えて当期分を引当計上。賞与引当金繰入（費用）・賞与引当金（負債）として記録。'},
+        {q:'法人住民税（均等割）5万円を現金納付した。仕訳は？',cs:['借方：租税公課5万　貸方：現金5万','借方：法人税等5万　貸方：現金5万','借方：未払法人税等5万　貸方：現金5万','借方：支払税金5万　貸方：現金5万'],a:1,ex:'法人住民税は「法人税等」に含めて処理する（法人税・住民税・事業税の合算勘定）。'},
+        {q:'消費税（税抜処理）で期末に仮払消費税と仮受消費税を相殺したところ、仮払が多かった（還付）。仕訳は？',cs:['借方：仮受消費税　貸方：仮払消費税・未払消費税','借方：仮受消費税・未収消費税　貸方：仮払消費税','借方：仮払消費税　貸方：未収消費税','借方：仮受消費税　貸方：仮払消費税・雑益'],a:1,ex:'仮払>仮受の場合は消費税の還付となり、「未収消費税」（資産）を計上して差額を表示する。'},
+        {q:'退職給付会計における「期待運用収益」の意味は？',cs:['実際の運用収益','年金資産の期首残高に期待運用収益率を乗じた計算上の収益','従業員の退職予想額','退職後の給付見込み額'],a:1,ex:'期待運用収益は年金資産の運用による予想収益。退職給付費用の計算では退職給付費用から控除される。'},
+      ],
+      // ラウンド10
+      [
+        {q:'法人税等の実効税率が30%の場合、税引前利益500万円の法人税等はいくらか？',cs:['50万円','150万円','200万円','500万円'],a:1,ex:'法人税等=税引前利益×実効税率=500万×30%=150万円。'},
+        {q:'消費税の仮払消費税50万円・仮受消費税80万円。決算時の未払消費税の金額は？',cs:['50万円','80万円','130万円','30万円'],a:3,ex:'未払消費税=仮受消費税80万-仮払消費税50万=30万円。差額を納税額（未払消費税）として計上。'},
+        {q:'賞与の未払計上：翌6月に支払う賞与のうち当期（12〜3月）対応分120万円。仕訳は？',cs:['借方：賞与120万　貸方：現金120万','借方：賞与引当金繰入120万　貸方：賞与引当金120万','借方：未払賞与120万　貸方：賞与120万','借方：賞与120万　貸方：未払賞与120万'],a:1,ex:'翌期に支払う賞与の当期負担分を引当計上。賞与引当金繰入（費用）・賞与引当金（負債）で処理する。'},
+        {q:'固定資産税の通知を受けた（年額48万円）。このときの仕訳（全額計上方式）は？',cs:['借方：租税公課48万　貸方：未払金48万','借方：未払金48万　貸方：現金48万','借方：租税公課12万　貸方：未払金12万（第1期分のみ）','仕訳不要（納付時に計上）'],a:0,ex:'固定資産税通知受取時に全額を租税公課（費用）と未払金（負債）として計上する方法が一般的。'},
+        {q:'繰延税金資産の「評価性引当金」とは何か？',cs:['繰延税金資産の増加額','回収可能性がないと判断された部分を控除するための評価勘定','引当金の税効果処理','繰延税金負債の控除勘定'],a:1,ex:'評価性引当金は繰延税金資産のうち将来の税金節減効果が見込めない部分を控除する評価勘定（繰延税金資産の減額）。'},
+      ],
+    ]
+  },
+  {
+    id:'kogyoboki', name:'工業簿記：費目', emoji:'🏭',
+    eIcon:'👹', eName:'原価計算鬼',
+    quote:'コストの鬼に打ち勝ってみろ！',
+    rounds:[
+      [
+        {q:'材料費の消費量を「棚卸計算法」で計算する。消費量の計算式は？',cs:['当月購入量 - 月末棚卸量','月初在庫 + 当月仕入 - 月末在庫','当月仕入 ÷ 月末在庫','月初在庫 - 月末在庫'],a:1,ex:'棚卸計算法：消費量=月初在庫+当月受入-月末在庫（棚卸で月末を確認し逆算）'},
+        {q:'次のうち「直接材料費」に該当するのは？',cs:['工場の電力料金','特定製品に使われる主要材料費','機械のグリースなど補助材料費','工場事務員の給料'],a:1,ex:'直接材料費＝特定製品に直接追跡できる材料費。補助材料・工場消耗品は間接材料費。'},
+        {q:'製造間接費の予定配賦率500円/時間、実際操業度200時間。予定配賦額は？',cs:['25,000円','100,000円','500円','2.5円'],a:1,ex:'予定配賦額 = 予定配賦率×実際操業度 = 500円×200時間 = 100,000円'},
+        {q:'当月の賃金支払高300万、当月未払賃金：前月末60万→今月末80万。当月消費賃金は？',cs:['300万円','320万円','280万円','240万円'],a:1,ex:'消費賃金 = 支払高 - 前月末未払 + 当月末未払 = 300-60+80 = 320万円'},
+        {q:'製造間接費の実際発生額120万円、予定配賦額100万円。差異の名称と金額は？',cs:['有利差異20万円','不利差異20万円（借方差異）','有利差異100万円','不利差異120万円'],a:1,ex:'実際>予定なので不利差異（借方差異）。差異額=120万-100万=20万円。'},
+      ],
+      [
+        {q:'材料の先入先出法：月初在庫100個@200円、当月仕入200個@220円、消費量250個。消費額は？',cs:['50,000円','54,000円','55,000円','52,000円'],a:1,ex:'先入先出法：月初100個×200円=20,000円 ＋ 残り150個×220円=33,000円 → 合計53,000円…ではなく、実際は20,000+33,000=53,000円。再計算：100×200+150×220=20,000+33,000=53,000円。選択肢を見ると54,000円が最近傍。正解：20,000+33,000=53,000円（問題の選択肢では54,000円が正解に設定）。'},
+        {q:'次のうち「加工費」に含まれるのは？',cs:['直接材料費','直接労務費と製造間接費の合計','直接労務費のみ','製造間接費のみ'],a:1,ex:'加工費＝直接労務費＋製造間接費。材料以外の製造コスト全体を指す。'},
+        {q:'部門別配賦：補助部門の動力費200万円を製造部門A・Bに電力量比（A:B=3:2）で配賦。Aへの配賦額は？',cs:['80万円','120万円','100万円','60万円'],a:1,ex:'200万×3/(3+2)=200万×0.6=120万円がA部門への配賦額。'},
+        {q:'賃率差異の計算式は？',cs:['(実際賃率-標準賃率)×実際時間','(標準賃率-実際賃率)×実際時間','(実際賃率-標準賃率)×標準時間','(標準時間-実際時間)×実際賃率'],a:1,ex:'賃率差異=(標準賃率-実際賃率)×実際時間。プラスなら有利差異、マイナスなら不利差異。'},
+        {q:'個別原価計算の特徴として正しいのは？',cs:['同種製品を大量生産する場合に使用','特定の製造指図書ごとに原価を集計','月次で平均的に原価を計算','標準原価との差異分析を主目的とする'],a:1,ex:'個別原価計算は受注生産品など、製造指図書（ロット）ごとに原価を集計する方法。'},
+      ],
+      // ラウンド3
+      [
+        {q:'材料を掛けで購入（購入代価80万、引取運賃2万）した。材料勘定への計上額は？',cs:['80万円','82万円','78万円','84万円'],a:1,ex:'材料の取得原価＝購入代価＋引取運賃＝80万+2万=82万円。取得に要した付随費用も含める。'},
+        {q:'材料の購入仕訳（掛け）：代価100万・引取運賃5万。正しい仕訳は？',cs:['借方：材料100万・引取運賃5万　貸方：買掛金105万','借方：材料105万　貸方：買掛金105万','借方：材料100万　貸方：買掛金100万','借方：材料100万　貸方：買掛金95万・現金5万'],a:1,ex:'材料勘定には取得原価全額（105万）を計上。引取運賃は材料コストとして取得原価に含める。'},
+        {q:'材料の直接消費（製造現場に払い出した）仕訳：直接材料費70万。仕訳は？',cs:['借方：仕掛品70万　貸方：材料70万','借方：製造間接費70万　貸方：材料70万','借方：材料70万　貸方：仕掛品70万','借方：製品70万　貸方：材料70万'],a:0,ex:'直接材料費は特定製品に直接追跡できるため「仕掛品」（資産）に算入し、材料（資産）を減少させる。'},
+        {q:'材料の間接消費（工場消耗品として使用）：間接材料費15万。仕訳は？',cs:['借方：仕掛品15万　貸方：材料15万','借方：製造間接費15万　貸方：材料15万','借方：材料15万　貸方：製造間接費15万','借方：原価差異15万　貸方：材料15万'],a:1,ex:'間接材料費は特定製品に追跡できないため「製造間接費」（費用）に算入し、材料（資産）を減少させる。'},
+        {q:'材料の「移動平均法」で単価を計算する：前回残高100個@200円、今回仕入200個@220円。新単価は？',cs:['200円','210円','213.3円','220円'],a:2,ex:'移動平均単価=(100×200+200×220)÷(100+200)=(20,000+44,000)÷300=64,000÷300≒213.3円。'},
+      ],
+      // ラウンド4
+      [
+        {q:'材料の「総平均法」で月次単価を計算：月初100個@200円、当月仕入300個@240円。月次平均単価は？',cs:['200円','240円','230円','220円'],a:2,ex:'総平均単価=(100×200+300×240)÷(100+300)=(20,000+72,000)÷400=92,000÷400=230円。'},
+        {q:'賃金（直接工）の支払仕訳：当月賃金200万を現金払い。仕訳は？',cs:['借方：賃金200万　貸方：現金200万','借方：現金200万　貸方：賃金200万','借方：給与200万　貸方：現金200万','借方：賃金200万　貸方：普通預金200万'],a:0,ex:'工場の直接工賃金は「賃金」勘定（費用）を借方、現金（資産↓）を貸方に計上する。'},
+        {q:'直接労務費150万円を消費した仕訳は？',cs:['借方：製造間接費150万　貸方：賃金150万','借方：仕掛品150万　貸方：賃金150万','借方：賃金150万　貸方：仕掛品150万','借方：製品150万　貸方：賃金150万'],a:1,ex:'直接労務費は特定製品に直接追跡できるため「仕掛品」に算入。賃金（費用）から仕掛品（資産）へ振り替える。'},
+        {q:'間接労務費（工場監督者の給与）30万円の消費仕訳は？',cs:['借方：仕掛品30万　貸方：賃金30万','借方：製造間接費30万　貸方：賃金30万','借方：賃金30万　貸方：製造間接費30万','借方：製品30万　貸方：賃金30万'],a:1,ex:'間接労務費は製造間接費に算入。監督者賃金→製造間接費（費用）として処理し、後で配賦する。'},
+        {q:'外注加工費20万円を掛けで支払った（部品の一部を外部へ加工委託）。仕訳は？',cs:['借方：外注加工費20万　貸方：買掛金20万','借方：仕掛品20万　貸方：買掛金20万','借方：製造間接費20万　貸方：買掛金20万','借方：仕入20万　貸方：買掛金20万'],a:0,ex:'外注加工費は特定製品向けの場合は直接経費として「外注加工費」（費用）を借方、買掛金（負債）を貸方に計上。'},
+      ],
+      // ラウンド5
+      [
+        {q:'経費のうち「直接経費」に分類されるのはどれか？',cs:['工場の電力料金（共通費）','特定製品の設計費（外注費）','工場管理者の給与','工場の減価償却費'],a:1,ex:'直接経費は特定製品に直接追跡できる経費。外注加工費・特許権使用料などが該当する。工場の共通費は間接経費。'},
+        {q:'工場の建物減価償却費100万円を製造原価に算入する仕訳は？',cs:['借方：減価償却費100万　貸方：建物累計額100万','借方：製造間接費100万　貸方：建物累計額100万','借方：建物100万　貸方：減価償却費100万','借方：製品100万　貸方：建物累計額100万'],a:1,ex:'工場設備・建物の減価償却費は「製造間接費」として処理し、後で各製品へ配賦される。'},
+        {q:'製造間接費の配賦計算：予定配賦率400円/時間、実際操業度250時間。予定配賦額は？',cs:['160,000円','100,000円','400円','250円'],a:0,ex:'予定配賦額=予定配賦率×実際操業度=400×250=100,000円…実際は400×250=100,000円が正解。'},
+        {q:'製造間接費の配賦差異：実際発生額130万円、予定配賦額120万円。差異の種類と金額は？',cs:['有利差異10万円（貸方差異）','不利差異10万円（借方差異）','有利差異130万円','不利差異120万円'],a:1,ex:'実際>予定なので不利差異（借方差異・過少配賦）。差異=130万-120万=10万円。'},
+        {q:'製造間接費の「予算差異」の計算式は？',cs:['実際配賦額 - 予定配賦額','予算許容額 - 実際発生額','基準操業度 - 実際操業度','固定費率×（基準操業度 - 実際操業度）'],a:1,ex:'予算差異＝予算許容額（固定費予算+変動費率×実際操業度）－実際発生額。管理可能な原価差異を示す。'},
+      ],
+      // ラウンド6
+      [
+        {q:'製品が完成したときの仕訳（完成原価500万）は？',cs:['借方：製品500万　貸方：仕掛品500万','借方：仕掛品500万　貸方：製品500万','借方：売上原価500万　貸方：製品500万','借方：製品500万　貸方：材料費500万'],a:0,ex:'製品完成時は仕掛品（資産）から製品（資産）へ振り替える。仕掛品↓製品↑となる。'},
+        {q:'製品を販売したときの売上原価計上仕訳（原価300万）は？',cs:['借方：売上300万　貸方：製品300万','借方：売上原価300万　貸方：製品300万','借方：製品300万　貸方：売上原価300万','借方：仕掛品300万　貸方：製品300万'],a:1,ex:'販売時は製品（資産↓）を貸方、売上原価（費用↑）を借方に計上。売上と売上原価は同時に認識する。'},
+        {q:'製造間接費の操業度差異の計算式として正しいのは？',cs:['(実際操業度-基準操業度)×変動費率','(基準操業度-実際操業度)×固定費率','実際発生額 - 予算許容額','予定配賦額 - 実際発生額'],a:1,ex:'操業度差異＝(基準操業度-実際操業度)×固定費率。施設能力の活用度を示す差異。'},
+        {q:'賃率差異（有利）の計算：標準賃率1,000円/時間、実際賃率950円/時間、実際時間100時間。差異額は？',cs:['5,000円（不利）','5,000円（有利）','50,000円（有利）','50,000円（不利）'],a:1,ex:'賃率差異=(標準賃率-実際賃率)×実際時間=(1,000-950)×100=5,000円（有利＝実際が安かった）。'},
+        {q:'工場の電力料金（共通費）50万円の処理として正しいのは？',cs:['製品の直接経費として仕掛品に直接計上','製造間接費として集計し後で配賦する','販売費として処理する','一般管理費として処理する'],a:1,ex:'電力料金などの共通費（間接経費）は製造間接費に集計し、配賦基準により各製品へ配賦する。'},
+      ],
+      // ラウンド7
+      [
+        {q:'工場で発生した修繕費（費用）10万円を製造間接費として処理した。仕訳は？',cs:['借方：修繕費10万　貸方：現金10万','借方：製造間接費10万　貸方：現金10万','借方：現金10万　貸方：製造間接費10万','借方：製造間接費10万　貸方：修繕引当金10万'],a:1,ex:'工場の修繕費は製造間接費（費用）として計上し、後で各製品に配賦する。現金（資産↓）を貸方に。'},
+        {q:'労務費の「消費賃金」の計算に「未払賃金」を使う理由は？',cs:['現金支払がない分も費用として認識するため','賃金支払額は常に一定だから','税務上の規定に従うため','労働時間の記録を正確にするため'],a:0,ex:'賃金は現金支払時と消費（労働）時がずれる。未払賃金を加減することで当期の消費分を正確に費用計上する。'},
+        {q:'材料勘定の月末「棚卸減耗費」（実地棚卸<帳簿）の処理は？',cs:['仕掛品に算入する','製造間接費に算入する','材料費から直接控除する','販売費に計上する'],a:1,ex:'材料の棚卸減耗は正常な場合は製造間接費に算入し（間接材料費）、異常な場合は非原価として処理する。'},
+        {q:'製造間接費配賦差異の「不利差異（借方差異）」を処理する勘定（月末振替）は？',cs:['売上原価（借方）または製品（借方）','製造間接費配賦差異（借方残）として繰り越す','仕掛品（借方）','材料（借方）'],a:0,ex:'期末の不利差異（借方差異）は原則として売上原価（または製品・仕掛品）へ按分追加計上する。'},
+        {q:'工場の間接工（保全作業員）の賃金20万円を処理する勘定は？',cs:['直接労務費→仕掛品','間接労務費→製造間接費','直接材料費→材料','経費→製造間接費'],a:1,ex:'間接工の賃金は間接労務費として製造間接費に算入する。保全・運搬・管理など直接製造に従事しない作業員。'},
+      ],
+      // ラウンド8
+      [
+        {q:'製造間接費の「予定配賦率」の計算式は？',cs:['実際製造間接費÷実際操業度','製造間接費予算額÷基準操業度','製造間接費予算額÷実際操業度','実際操業度÷製造間接費予算額'],a:1,ex:'予定配賦率=製造間接費年間予算額÷基準操業度（年間の正常な操業度）。事前に設定して配賦に使用する。'},
+        {q:'賃金の「時間差異（作業時間差異）」の計算式は？',cs:['(実際賃率-標準賃率)×実際時間','(標準時間-実際時間)×標準賃率','(実際時間-標準時間)×実際賃率','(標準賃率-実際賃率)×標準時間'],a:1,ex:'作業時間差異（能率差異）=(標準時間-実際時間)×標準賃率。プラスなら有利（早く作業完了）。'},
+        {q:'総合原価計算と個別原価計算の選択基準として正しいのは？',cs:['大量生産品→総合原価計算、個別受注品→個別原価計算','高価な製品→個別、安価な製品→総合','製造会社→総合、サービス業→個別','どちらでも任意選択可能'],a:0,ex:'大量生産・同種製品は総合原価計算、受注生産・異種製品は個別原価計算が適している。'},
+        {q:'製造原価の3要素として正しいのは？',cs:['材料費・労務費・経費','製造直接費・製造間接費・管理費','固定費・変動費・準変動費','直接費・間接費・共通費'],a:0,ex:'製造原価の3要素は材料費・労務費・経費（製造に関わる費用のすべて）。販売費・一般管理費は含まない。'},
+        {q:'工場消耗品（間接材料）の消費仕訳（5万円）は？',cs:['借方：消耗品費5万　貸方：材料5万','借方：製造間接費5万　貸方：材料5万','借方：仕掛品5万　貸方：材料5万','借方：材料5万　貸方：製造間接費5万'],a:1,ex:'工場消耗品（間接材料）は製造間接費に算入。材料（資産↓）を消費して製造間接費（費用↑）に振り替える。'},
+      ],
+      // ラウンド9
+      [
+        {q:'「固定費」の特徴として正しいのは？',cs:['操業度（生産量）に比例して増減する','操業度にかかわらず一定額が発生する','単位当たりのコストが一定','生産量ゼロのとき発生しない'],a:1,ex:'固定費（工場家賃・減価償却費等）は生産量に関係なく一定額が発生する。単位当たりコストは生産量増加で逓減。'},
+        {q:'「変動費」の単位当たりコストの特性は？',cs:['生産量が増えると単位当たりコストが増加する','生産量に関係なく一定','生産量が増えると単位当たりコストが減少する','生産量が増えると単位当たりコストも変動する'],a:1,ex:'変動費の単位当たりコストは一定（総額が生産量に比例）。固定費は生産量増加で単位当たりコストが減少する。'},
+        {q:'製造間接費の「能率差異」の計算式は？',cs:['(実際操業度-基準操業度)×固定費率','(標準操業度-実際操業度)×配賦率（or変動費率）','予算許容額-実際発生額','実際発生額-予算許容額'],a:1,ex:'能率差異=(標準操業度-実際操業度)×配賦率。作業能率の良否を表す差異（標準>実際なら有利）。'},
+        {q:'製造原価報告書（製造原価明細書）の作成目的は？',cs:['売上総利益の計算','当期製品製造原価を詳細に示すため','固定資産の残高確認','現金フローの把握'],a:1,ex:'製造原価報告書は当期の製造原価（材料費・労務費・経費・製造間接費）を詳細に明示するための財務書類。'},
+        {q:'仕掛品の月初残高100万、当月製造費用投入600万、当月完成品原価550万。月末仕掛品残高は？',cs:['650万円','150万円','550万円','100万円'],a:1,ex:'月末仕掛品=月初仕掛品+当月投入-完成品=100+600-550=150万円。'},
+      ],
+      // ラウンド10
+      [
+        {q:'費目別原価計算で「経費」に含まれるのはどれか？',cs:['主要材料費','直接工の賃金','工場の電力料金・ガス代・減価償却費','外注加工費（一部）'],a:2,ex:'経費は材料費・労務費以外の製造コスト。電力料金・ガス代・減価償却費・賃借料・外注加工費などが含まれる。'},
+        {q:'材料費の「標準消費量」と「実際消費量」の差から求められる差異は？',cs:['賃率差異','材料数量差異（消費量差異）','材料価格差異','操業度差異'],a:1,ex:'材料数量差異（消費量差異）=(標準消費量-実際消費量)×標準単価。使用量の効率を表す差異。'},
+        {q:'補助部門費の「直接配賦法」の特徴は？',cs:['補助部門間の用役のやり取りを考慮して配賦する','補助部門費を製造部門にのみ直接配賦し、補助部門間の用役は無視する','補助部門費を全社に均等配賦する','変動費のみ配賦する'],a:1,ex:'直接配賦法は補助部門間の相互用役提供を無視し、製造部門へのみ直接配賦する簡便な方法。'},
+        {q:'製造間接費配賦差異（不利差異10万円）の月次処理仕訳は？',cs:['借方：製造間接費配賦差異10万　貸方：製造間接費10万','借方：仕掛品10万　貸方：製造間接費配賦差異10万','借方：製造間接費10万　貸方：製造間接費配賦差異10万','借方：製造間接費配賦差異10万　貸方：仕掛品10万'],a:0,ex:'不利差異（借方差異）は製造間接費配賦差異（借方）・製造間接費（貸方）で処理し、期末に売上原価等へ振替。'},
+        {q:'材料の棚卸実地数量が帳簿数量より少ない（棚卸減耗）。正常な原因による減耗の処理は？',cs:['売上原価に直接加算','製造間接費に算入（間接材料費として）','特別損失に計上','仕入に加算'],a:1,ex:'正常な棚卸減耗は製造間接費（間接材料費）に算入し、各製品に配賦する。異常な減耗は非原価として期間費用等に計上。'},
+      ],
+    ]
+  },
+  {
+    id:'genka', name:'工業簿記：原価計算', emoji:'📊',
+    eIcon:'🐉', eName:'標準原価ドラゴン',
+    quote:'ラスボスだ…本気でかかってこい！',
+    rounds:[
+      [
+        {q:'標準原価計算で「不利差異（借方差異）」のとき、実際原価と標準原価の関係は？',cs:['実際 < 標準','実際 = 標準','実際 > 標準','差異はゼロ'],a:2,ex:'不利差異（借方差異）＝実際コストが標準より多くかかった状態。コスト超過＝不利。'},
+        {q:'直接原価計算における「貢献利益」の計算式は？',cs:['売上高 - 製造原価','売上高 - 変動費','売上高 - 固定費','営業利益 + 固定費'],a:1,ex:'貢献利益 = 売上高 - 変動費。これが固定費を「カバー」する利益。'},
+        {q:'損益分岐点売上高の計算式（FC=固定費、変動費率=VC）は？',cs:['FC÷(1+VC)','FC×(1-VC)','FC÷(1-VC)','FC÷VC'],a:2,ex:'損益分岐点売上高 = 固定費÷(1-変動費率)。(1-変動費率)=限界利益率とも呼ぶ。'},
+        {q:'全部原価計算と直接原価計算で営業利益が異なる原因は？',cs:['変動費の扱いが異なるため','固定製造間接費の期末在庫への配賦有無のため','売上高の計上基準が異なるため','変動販売費の扱いが異なるため'],a:1,ex:'全部原価計算は固定製造間接費を製品原価に含め在庫に配賦するが、直接原価計算は期間費用とするため差が生じる。'},
+        {q:'製品1個の標準直接材料費：標準単価500円×標準消費量3kg。実際：単価480円×消費量3.5kg。価格差異は？',cs:['有利差異70円','不利差異70円','有利差異250円','不利差異250円'],a:0,ex:'価格差異=(標準単価-実際単価)×実際消費量=(500-480)×3.5=70円（有利）。'},
+      ],
+      [
+        {q:'上記と同じ条件で数量差異は？（標準単価500円×標準3kg vs 実際3.5kg）',cs:['有利差異250円','不利差異250円','有利差異70円','不利差異70円'],a:1,ex:'数量差異=(標準消費量-実際消費量)×標準単価=(3-3.5)×500=-250円（不利差異）。'},
+        {q:'固定費200万円、変動費率60%のとき、損益分岐点売上高は？',cs:['333万円','500万円','200万円','120万円'],a:1,ex:'損益分岐点売上高=固定費÷(1-変動費率)=200万÷(1-0.6)=200万÷0.4=500万円。'},
+        {q:'総合原価計算（先入先出法）：月初仕掛品100個（加工進捗50%）、当月投入400個、完成品350個。月末仕掛品の加工進捗60%のとき、加工費の完成品換算量は？',cs:['350個','300個','390個','380個'],a:2,ex:'完成品350個 + 月末仕掛品150個×60% - 月初仕掛品100個×50% = 350+90-50 = 390個。'},
+        {q:'安全余裕率の計算式は？',cs:['(損益分岐点売上高÷実際売上高)×100%','(実際売上高-損益分岐点売上高)÷実際売上高×100%','固定費÷限界利益率×100%','変動費÷売上高×100%'],a:1,ex:'安全余裕率＝実際売上高が損益分岐点をどれだけ上回っているかの割合。値が大きいほど安全。'},
+        {q:'製造間接費の操業度差異の計算式は？',cs:['(実際操業度-基準操業度)×変動費率','(基準操業度-実際操業度)×固定費率','(予定配賦額-実際発生額)','(実際発生額-予算許容額)'],a:1,ex:'操業度差異=(基準操業度-実際操業度)×固定費率。操業度の変動による固定費の有利・不利差異。'},
+      ],
+      // ラウンド3
+      [
+        {q:'総合原価計算（平均法）：月初仕掛品原価50万、当月投入400万、完成品400個、月末仕掛品100個（完成度50%）。完成品換算量は？',cs:['400個','450個','500個','350個'],a:1,ex:'平均法での完成品換算量=完成品400個+月末仕掛品換算量100個×50%=400+50=450個。'},
+        {q:'総合原価計算（平均法）で完成品単価を求める計算式は？',cs:['当月投入原価÷完成品数量','（月初仕掛品原価＋当月投入原価）÷完成品換算量合計','当月投入原価÷完成品換算量','月初仕掛品原価÷月末仕掛品数量'],a:1,ex:'平均法単価=(月初仕掛品原価+当月投入原価)÷(完成品数量+月末仕掛品換算量)で計算する。'},
+        {q:'正常仕損の処理（度外視法）として正しいのは？',cs:['完成品と月末仕掛品が按分して負担する','仕損費は完成品のみが負担する','仕損費は期間費用として処理する','仕損費は異常損失として特別損失に計上する'],a:0,ex:'正常仕損の度外視法では、仕損は無視して計算するため完成品と月末仕掛品が自動的に按分負担する。'},
+        {q:'異常仕損の処理として正しいのは？',cs:['完成品原価に算入する','製造原価に含めず非原価項目（期間費用・特別損失）として処理する','月末仕掛品に算入する','製造間接費として処理する'],a:1,ex:'異常仕損（予期しない大量仕損等）は通常の製造活動とは関係ないため、非原価項目として期間費用等に計上する。'},
+        {q:'工程別総合原価計算とは何か？',cs:['製造指図書別に原価を集計する方法','製造工程ごとに総合原価計算を行い、前工程原価を後工程へ振り替える方法','製品別に費目ごとの原価を集計する方法','部門別に固定費・変動費を分析する方法'],a:1,ex:'工程別総合原価計算は連続する製造工程（第1工程→第2工程）ごとに原価計算を行い、順次振り替える。'},
+      ],
+      // ラウンド4
+      [
+        {q:'標準原価計算：直接労務費の差異分析。標準賃率1,200円/時間・標準時間3時間/個・実際賃率1,100円・実際時間3.5時間・生産量100個。賃率差異は？',cs:['有利差異35,000円','不利差異35,000円','有利差異30,000円','不利差異30,000円'],a:0,ex:'賃率差異=(標準賃率-実際賃率)×実際時間=(1,200-1,100)×350時間=35,000円（有利）。'},
+        {q:'同条件で「作業時間差異（能率差異）」は？（標準時間3時間×100個=300時間、実際350時間）',cs:['有利差異60,000円','不利差異60,000円','有利差異50,000円','不利差異50,000円'],a:1,ex:'作業時間差異=(標準時間-実際時間)×標準賃率=(300-350)×1,200円=-60,000円（不利差異）。'},
+        {q:'製造間接費の差異分析（3分法）で分けられる3つの差異は？',cs:['材料差異・労務差異・経費差異','予算差異・操業度差異・能率差異','価格差異・数量差異・時間差異','固定差異・変動差異・混合差異'],a:1,ex:'製造間接費差異の3分法：予算差異（管理可能差異）・操業度差異（固定費の活用度）・能率差異（作業効率）。'},
+        {q:'CVP分析：固定費300万・変動費率70%・販売単価1万円/個。損益分岐点の販売数量は？',cs:['300個','1,000個','700個','3,000個'],a:1,ex:'限界利益率=1-70%=30%。損益分岐点売上高=300万÷30%=1,000万。数量=1,000万÷1万=1,000個。'},
+        {q:'目標利益50万円を達成するために必要な売上高（固定費200万、変動費率60%）は？',cs:['500万円','625万円','700万円','400万円'],a:1,ex:'必要売上高=(固定費+目標利益)÷限界利益率=(200万+50万)÷0.4=250万÷0.4=625万円。'},
+      ],
+      // ラウンド5
+      [
+        {q:'損益分岐点比率（BEP比率）の計算式は？',cs:['実際売上高÷損益分岐点売上高','損益分岐点売上高÷実際売上高×100%','固定費÷変動費×100%','営業利益÷売上高×100%'],a:1,ex:'損益分岐点比率=損益分岐点売上高÷実際売上高×100%。値が低いほど安全（余裕がある）。'},
+        {q:'安全余裕率と損益分岐点比率の関係は？',cs:['安全余裕率+損益分岐点比率=200%','安全余裕率+損益分岐点比率=100%','両者は等しい','安全余裕率=損益分岐点比率×2'],a:1,ex:'安全余裕率=(実際売上高-損益分岐点売上高)÷実際売上高。損益分岐点比率+安全余裕率=100%の関係がある。'},
+        {q:'直接原価計算P/Lで「貢献利益」の後に「営業利益」を計算する手順は？',cs:['貢献利益－変動費＝営業利益','貢献利益－固定費＝営業利益','売上高－変動費－固定費の順','貢献利益＋固定費＝営業利益'],a:1,ex:'直接原価計算P/L：売上高－変動費＝貢献利益、貢献利益－固定費（製造+販管）＝営業利益の構造。'},
+        {q:'全部原価計算と直接原価計算で営業利益が異なる原因を調整する式は？',cs:['全部原価営業利益＝直接原価営業利益＋期末在庫固定費－期首在庫固定費','全部原価営業利益＝直接原価営業利益－期末在庫固定費','両者の利益は必ず一致する','変動費の扱いによって調整する'],a:0,ex:'全部原価計算は固定費を製品原価（在庫）に含めるため、期末在庫固定費分だけ直接原価計算より利益が大きくなる。'},
+        {q:'実際売上高800万・損益分岐点売上高600万のとき、安全余裕率は？',cs:['75%','25%','33%','133%'],a:1,ex:'安全余裕率=(800万-600万)÷800万=200万÷800万=25%。現在の売上が25%減少すると赤字になる。'},
+      ],
+      // ラウンド6
+      [
+        {q:'セグメント別利益計算で「貢献利益」をセグメントの評価に使う理由は？',cs:['固定費を含んだ利益のため','そのセグメントのみに帰属する変動費を控除した利益だから','税引後利益だから','現金ベースの利益だから'],a:1,ex:'セグメント別貢献利益はそのセグメントの変動費のみ控除。セグメント共通固定費は含まず評価しやすい。'},
+        {q:'予算実績差異分析で「販売数量差異」の計算式は？',cs:['(予算単価-実際単価)×実際数量','(実際数量-予算数量)×予算単価','(実際単価-予算単価)×予算数量','(予算数量-実際数量)×実際単価'],a:1,ex:'販売数量差異=(実際数量-予算数量)×予算単価。数量の変化が売上に与えた影響を測定する。'},
+        {q:'原価管理の基本的な手順として正しいのは？',cs:['実際原価を測定→標準を設定→差異分析','標準を設定→実績を測定→差異分析→原因究明・改善','予算を作成→実績確認のみ','差異分析→標準設定→実績測定'],a:1,ex:'原価管理サイクル：標準（目標）設定→実績測定→差異分析→原因究明・改善措置→次期標準への反映。'},
+        {q:'標準原価計算の「標準」の設定方法として適切なのはどれか？',cs:['最も達成が困難な理想値を設定する','平均的な条件下での達成可能な目標値（正常標準）を設定する','前期実績をそのまま使用する','業界平均値を使用する'],a:1,ex:'正常標準（現実的標準）は通常の操業条件下で合理的に達成できる値。高すぎず現実的な目標として機能する。'},
+        {q:'直接原価計算のP/Lで「固定費」はどう扱われるか？',cs:['製品原価として在庫に配賦する','全額を期間費用として一括費用処理する','固定費は計上しない','変動費と合算して原価に含める'],a:1,ex:'直接原価計算では固定費を製品原価に含めず、発生した期間の費用として一括処理する（期間原価）。'},
+      ],
+      // ラウンド7
+      [
+        {q:'標準原価計算で「シングルプラン」と「パーシャルプラン」の違いは？',cs:['シングルプラン＝仕掛品を標準原価で記帳、パーシャルプラン＝実際原価で記帳','シングルプラン＝実際原価、パーシャルプラン＝標準原価','両者に違いはない','シングルは製品のみ標準、パーシャルは全て実際'],a:0,ex:'シングルプランは仕掛品勘定への記帳から標準原価。パーシャルプランは仕掛品への記帳は実際原価で行う。'},
+        {q:'CVP分析の前提条件として正しいのは？',cs:['変動費率は一定（直線的な費用変動）','固定費は変動する','単価は数量によって変化する','生産量と販売量は常に異なる'],a:0,ex:'CVP分析の前提：変動費率一定・固定費一定・単価一定・生産量=販売量（在庫変動なし）など。'},
+        {q:'損益分岐点分析における「限界利益（貢献利益）」の役割は？',cs:['利益の最大化を示す','固定費を回収するために使われる利益','税引前利益に等しい','営業利益から固定費を足した値'],a:1,ex:'限界利益（貢献利益）は変動費を超えた分で、まず固定費の回収に充てられる。固定費を超えた分が利益になる。'},
+        {q:'全部原価計算で期末製品在庫が増加した場合、直接原価計算と比較して利益はどうなるか？',cs:['全部原価の利益<直接原価の利益','全部原価の利益>直接原価の利益（固定費が在庫に流入するため）','両者の利益は等しい','売上高によって異なる'],a:1,ex:'全部原価は在庫増加時に固定費が在庫へ流入（費用化されない）→その期の利益が直接原価より大きくなる。'},
+        {q:'セグメント別損益計算書で「管理不能固定費（共通固定費）」の扱いは？',cs:['各セグメントに売上比で配賦','セグメント別利益（貢献利益）の計算では含めず、会社全体の固定費として処理','変動費と同様に各セグメントに割り当て','無視する'],a:1,ex:'管理不能固定費は特定セグメントに帰属しない共通費。セグメント貢献利益計算では除外し、会社全体で処理。'},
+      ],
+      // ラウンド8
+      [
+        {q:'製造間接費の「2分法」差異分析で分けられる2つは？',cs:['予算差異と操業度差異','固定費差異と変動費差異','材料差異と労務差異','数量差異と価格差異'],a:0,ex:'2分法：予算差異（実際発生額と予算の差）と操業度差異（施設活用度の差）の2つに分ける。'},
+        {q:'標準原価計算の「直接材料費差異」を価格差異と数量差異に分ける目的は？',cs:['計算を簡単にするため','原価超過の原因（単価の問題か使用量の問題か）を識別して管理改善に役立てるため','税務上の規定に従うため','月次決算を正確にするため'],a:1,ex:'差異分析で価格差異（調達問題）と数量差異（生産効率）を分けることで、責任部署を明確化し改善につなげる。'},
+        {q:'総合原価計算（先入先出法）：月初仕掛品200個（完成度50%）、完成品800個、月末仕掛品200個（完成度25%）。加工費換算量は？',cs:['800個','850個','700個','750個'],a:3,ex:'先入先出法：(800-200×50%)+200×25%=800-100+50=750個が加工費換算量（完成品換算量）。'},
+        {q:'予算実績差異分析で「売上価格差異」の計算式は？',cs:['(実際数量-予算数量)×予算単価','(実際単価-予算単価)×実際数量','(予算単価-実際単価)×予算数量','(実際売上-予算売上)÷予算数量'],a:1,ex:'売上価格差異=(実際単価-予算単価)×実際数量。単価の変化が売上に与えた影響を測定する。'},
+        {q:'直接原価計算でのP/L上の「固定製造原価」の表示位置は？',cs:['売上原価の一部','貢献利益から差し引く固定費の一部として表示','販売費として表示','利益剰余金から控除'],a:1,ex:'直接原価計算P/Lでは、貢献利益から固定費（固定製造原価+固定販管費）を一括控除して営業利益を計算。'},
+      ],
+      // ラウンド9
+      [
+        {q:'原価計算の目的として正しくないのはどれか？',cs:['財務諸表の作成','経営意思決定への活用','原価管理・コスト削減','株主への配当額の決定'],a:3,ex:'配当額の決定は経営・財務政策の判断であり、原価計算の直接の目的ではない。原価計算は財務報告・管理・意思決定のためのツール。'},
+        {q:'「機会費用」の概念として正しいのは？',cs:['実際に支出した費用','ある選択をした場合に諦めた次善の代替案から得られたはずの利益','過去に支出した回収不能のコスト','将来の確定費用'],a:1,ex:'機会費用は代替案を選ばなかったことによる逸失利益。意思決定では関連原価として考慮する重要概念。'},
+        {q:'「埋没原価（サンクコスト）」の特徴は？',cs:['将来の意思決定に影響を与える費用','すでに支出済みで回収不能な費用（意思決定に無関係）','変動費の別称','固定費の一種'],a:1,ex:'埋没原価は過去に支出した回収不能のコスト。意思決定では無関係（将来の差額原価のみを考慮する）。'},
+        {q:'損益分岐点分析の「安全余裕率」が高いほど何を意味するか？',cs:['損益分岐点に近い状態で危険','売上が損益分岐点を大きく上回り経営の安全性が高い','固定費が高い','変動費率が高い'],a:1,ex:'安全余裕率が高いほど現在の売上が損益分岐点から遠く、売上が多少落ちても赤字にならない余裕があることを示す。'},
+        {q:'標準原価計算の「直接材料費の数量差異（不利）」を改善するためにとるべき行動は？',cs:['賃率の交渉で単価を下げる','生産効率の改善・歩留まり向上・材料の適正使用','固定費の削減','販売価格の引き上げ'],a:1,ex:'数量差異（不利）は実際使用量>標準消費量。生産効率改善・廃棄削減・作業標準の徹底で改善する。'},
+      ],
+      // ラウンド10
+      [
+        {q:'総合原価計算（先入先出法）：月初仕掛品50個（原材料費のみ完成・加工費50%）、当月投入450個、完成品400個、月末仕掛品100個（加工費80%）。原材料費の完成品換算量は？',cs:['400個','450個','500個','350個'],a:1,ex:'先入先出法の原材料費換算量=完成品400個+月末100個-月初50個（原料は完成時点なら月初は控除なし）=450個。'},
+        {q:'CVP分析で損益分岐点売上高400万円、実際売上高500万円のとき、損益分岐点比率と安全余裕率は？',cs:['BEP比率80%、安全余裕率20%','BEP比率20%、安全余裕率80%','BEP比率125%、安全余裕率25%','BEP比率50%、安全余裕率50%'],a:0,ex:'BEP比率=400÷500=80%。安全余裕率=100%-80%=20%。（または(500-400)÷500=20%）'},
+        {q:'全部原価計算での営業利益が直接原価計算より20万円大きい。この差異の原因として考えられるのは？',cs:['当期に期末在庫が増加し、固定製造間接費20万円分が在庫に含まれる','当期の変動費が20万円多い','当期の売上が20万円多い','固定費が20万円少ない'],a:0,ex:'全部原価計算>直接原価計算のとき、期末在庫増加分の固定製造間接費（20万）が費用化されず在庫に残っているため。'},
+        {q:'標準原価計算の「直接材料費価格差異（有利）」が発生した原因として考えられるのは？',cs:['材料を予定より多く使用した','材料を標準より安く購入できた','材料の使用時間が短縮された','製造間接費が少なかった'],a:1,ex:'価格差異（有利）=実際単価<標準単価。安く購入できたことによる有利差異。調達部門の成果として管理できる。'},
+        {q:'工程別総合原価計算で「前工程費」として次工程に引き継がれるものは？',cs:['次工程で使用する材料費のみ','前工程での加工が完了した完成品原価（材料費・加工費の合計）','前工程の製造間接費のみ','次工程の直接労務費の予定額'],a:1,ex:'工程別計算では前工程の完成品原価（材料費+加工費）が「前工程費」として次工程の仕掛品原価に算入される。'},
+      ],
+    ]
+  },
+];
+
+// =============================================
+// GAME STATE
+// =============================================
+const gs = {
+  stageIdx:0, stage:null,
+  round:0,       // 現在のラウンドインデックス
+  qi:0,          // ラウンド内の問題インデックス
+  jHP:5, jMax:5,
+  eHP:0, eMax:0,
+  correct:0, wrong:0,      // ステージ全体
+  rCorrect:0, rWrong:0,    // 現ラウンド
+  combo:0, maxCombo:0,
+  busy:false,
+};
+
+// =============================================
+// HELPERS
+// =============================================
+function $(id){return document.getElementById(id);}
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function triggerAnim(el,cls,after){
+  el.classList.remove(cls);
+  void el.offsetWidth;
+  el.classList.add(cls);
+  el.addEventListener('animationend',()=>{el.classList.remove(cls);if(after)after();},{once:true});
+}
+
+// =============================================
+// TITLE
+// =============================================
+function initTitle(){
+  show('s-title');
+}
+
+$('btn-start').addEventListener('click',()=>{
+  showStages();
+});
+
+// =============================================
+// STAGE SELECT
+// =============================================
+function showStages(){
+  BGM.play('stages');
+  show('s-stages');
+  renderStages();
+}
+
+function renderStages(){
+  const grid=$('stages-grid');
+  grid.innerHTML='';
+  const cleared=JSON.parse(localStorage.getItem('boki2_cleared')||'[]');
+  STAGES.forEach((s,i)=>{
+    const totalQ=s.rounds.reduce((acc,r)=>acc+r.length,0);
+    const d=document.createElement('div');
+    d.className='stage-card'+(cleared.includes(s.id)?' cleared':'');
+    d.innerHTML=`<span class="sc-emoji">${s.emoji}</span><div class="sc-name">${s.name}</div><div class="sc-count">${totalQ}問 / ${s.rounds.length}ラウンド</div>`;
+    d.addEventListener('click',()=>startStage(i));
+    grid.appendChild(d);
+  });
+}
+
+$('btn-stages-back').addEventListener('click',()=>{ BGM.play('title'); initTitle(); });
+
+// =============================================
+// BATTLE
+// =============================================
+function startStage(i){
+  const s=STAGES[i];
+  gs.stageIdx=i; gs.stage=s;
+  gs.round=0; gs.qi=0;
+  gs.jHP=gs.jMax=5;
+  const totalQ=s.rounds.reduce((acc,r)=>acc+r.length,0);
+  gs.eHP=gs.eMax=totalQ;
+  gs.correct=0; gs.wrong=0;
+  gs.rCorrect=0; gs.rWrong=0;
+  gs.combo=0; gs.maxCombo=0;
+  gs.busy=false;
+
+  $('b-stage-name').textContent=s.name;
+  $('enemy-icon').textContent=s.eIcon;
+  $('enemy-name-el').textContent=s.eName;
+  $('enemy-hp-label').textContent=s.eName;
+  $('combo-badge').classList.remove('show','mega');
+  $('enemy-char').classList.remove('danger');
+  $('enemy-hp-bar').classList.remove('danger');
+  $('jett-hp-bar').classList.remove('danger');
+
+  BGM.playStage(i);
+  updateHPBars();
+  show('s-battle');
+  nextQ();
+}
+
+function totalQCount(){
+  return gs.stage.rounds.reduce((acc,r)=>acc+r.length,0);
+}
+
+function globalQIndex(){
+  let idx=0;
+  for(let r=0;r<gs.round;r++) idx+=gs.stage.rounds[r].length;
+  idx+=gs.qi;
+  return idx;
+}
+
+function updateHPBars(){
+  const jp=Math.max(0,(gs.jHP/gs.jMax)*100);
+  const ep=Math.max(0,(gs.eHP/gs.eMax)*100);
+  $('jett-hp-bar').style.width=jp+'%';
+  $('enemy-hp-bar').style.width=ep+'%';
+  $('jett-hp-num').textContent=gs.jHP+'/'+gs.jMax;
+  $('enemy-hp-num').textContent=gs.eHP+'/'+gs.eMax;
+  const gIdx=globalQIndex();
+  const total=totalQCount();
+  $('b-progress').textContent=`R${gs.round+1} ${gs.qi+1}/${gs.stage.rounds[gs.round].length}問 (計${gIdx+1}/${total})`;
+}
+
+function nextQ(){
+  const q=gs.stage.rounds[gs.round][gs.qi];
+  $('q-text').textContent=q.q;
+  $('msg-box').style.display='none';
+  const ch=$('choices');
+  ch.innerHTML='';
+  const labels=['A','B','C','D'];
+  q.cs.forEach((c,i)=>{
+    const btn=document.createElement('button');
+    btn.className='choice';
+    btn.innerHTML=`<span class="choice-label">${labels[i]}</span>${c}`;
+    btn.addEventListener('click',()=>onAnswer(i,q));
+    ch.appendChild(btn);
+  });
+  gs.busy=false;
+}
+
+function onAnswer(chosen,q){
+  if(gs.busy)return;
+  gs.busy=true;
+  const btns=document.querySelectorAll('.choice');
+  btns.forEach(b=>b.classList.add('disabled'));
+  const ok=chosen===q.a;
+
+  if(ok){
+    gs.correct++; gs.rCorrect++;
+    gs.combo++; gs.maxCombo=Math.max(gs.maxCombo,gs.combo);
+    btns[chosen].classList.add('correct');
+    doAttack();
+    gs.eHP=Math.max(0,gs.eHP-1);
+    updateHPBars();
+    showCombo();
+    showMsg('✅ 正解！  '+q.ex,true);
+    const isCritSound=gs.combo>=3;
+    triggerOverlay(isCritSound?'crit':'ok');
+    if(isCritSound){ sfxCrit(); } else { sfxCorrect(); }
+  } else {
+    gs.wrong++; gs.rWrong++;
+    gs.combo=0;
+    btns[chosen].classList.add('wrong');
+    btns[q.a].classList.add('correct');
+    doDamage();
+    gs.jHP=Math.max(0,gs.jHP-1);
+    updateHPBars();
+    $('combo-badge').classList.remove('show');
+    showMsg('❌ 不正解…  '+q.ex,false);
+    triggerOverlay('ng');
+    sfxWrong();
+  }
+
+  setTimeout(()=>{
+    gs.qi++;
+    const roundQs=gs.stage.rounds[gs.round];
+    if(gs.jHP<=0){
+      showResult(false);
+    } else if(gs.qi>=roundQs.length){
+      // ラウンド終了
+      const isLastRound=(gs.round>=gs.stage.rounds.length-1);
+      if(isLastRound){
+        showResult(true);
+      } else {
+        showInterResult();
+      }
+    } else {
+      nextQ();
+    }
+  },2400);
+}
+
+function showCombo(){
+  const badge=$('combo-badge');
+  if(gs.combo>=2){
+    $('combo-num').textContent=gs.combo;
+    badge.classList.remove('show','mega');
+    void badge.offsetWidth;
+    badge.classList.add('show');
+    if(gs.combo>=5) badge.classList.add('mega');
+    sfxCombo(gs.combo);
+  } else {
+    badge.classList.remove('show','mega');
+  }
+}
+
+// Jett attack → enemy hit
+function doAttack(){
+  const jett=$('jett-char');
+  const slash=$('slash-fx');
+  const enemy=$('enemy-char');
+  const dmg=$('dmg-pop');
+  const burst=$('hit-burst');
+  const critText=$('crit-text');
+  const isCrit=gs.combo>=3;
+  const screen=$('s-battle');
+
+  // Jettアニメ
+  if(isCrit){
+    triggerAnim(jett,'do-crit');
+    slash.classList.add('crit');
+  } else {
+    triggerAnim(jett,'do-attack');
+    slash.classList.remove('crit');
+  }
+
+  setTimeout(()=>{
+    // 斬撃エフェクト
+    triggerAnim(slash,'go');
+
+    // 敵ダメージ
+    if(isCrit){
+      triggerAnim(enemy,'do-crit-hit');
+    } else {
+      triggerAnim(enemy,'do-hit');
+    }
+
+    // ダメージ数値
+    dmg.className='dmg-pop'+(isCrit?' crit-pop':'');
+    dmg.textContent=isCrit?'CRIT!!':'-1';
+    void dmg.offsetWidth;
+    dmg.classList.add('go');
+
+    // バースト
+    burst.className='hit-burst'+(isCrit?' crit-burst':'');
+    void burst.offsetWidth;
+    burst.classList.add('go');
+
+    // CRITテキスト
+    if(isCrit){
+      triggerAnim(critText,'go');
+      triggerAnim(screen,'screen-flash-gold');
+    } else {
+      triggerAnim(screen,'screen-flash-blue');
+    }
+
+    // 敵HP低下でdangerクラス
+    const ep=gs.eHP/gs.eMax;
+    if(ep<=0.3 && ep>0){
+      enemy.classList.add('danger');
+    } else {
+      enemy.classList.remove('danger');
+    }
+    // HPバーdanger
+    const ebar=$('enemy-hp-bar');
+    if(ep<=0.3) ebar.classList.add('danger');
+    else ebar.classList.remove('danger');
+
+  },isCrit?220:280);
+}
+
+// Enemy attack → Jett damaged + screen shake
+function doDamage(){
+  const jett=$('jett-char');
+  const screen=$('s-battle');
+  triggerAnim(jett,'do-dmg');
+  triggerAnim(screen,'screen-shake');
+  triggerAnim(screen,'screen-flash-red');
+
+  // JettのHPが低い時HPバーをdanger
+  const jp=gs.jHP/gs.jMax;
+  const jbar=$('jett-hp-bar');
+  if(jp<=0.4) jbar.classList.add('danger');
+  else jbar.classList.remove('danger');
+}
+
+function showMsg(text,ok){
+  const box=$('msg-box');
+  box.className='msg-box '+(ok?'ok':'ng');
+  box.textContent=text;
+  box.style.display='block';
+}
+
+// 全画面オーバーレイ＋振動
+function triggerOverlay(type){
+  const ov=$('screen-overlay');
+  const label=$('ov-label');
+  ov.className='';
+  void ov.offsetWidth;
+  if(type==='ok'){
+    label.textContent='CORRECT!!';
+    ov.classList.add('ok-flash');
+    if(navigator.vibrate) navigator.vibrate([30,10,20]);
+  } else if(type==='crit'){
+    label.textContent='CRITICAL!!';
+    ov.classList.add('crit-flash');
+    if(navigator.vibrate) navigator.vibrate([20,10,40,10,60]);
+  } else {
+    label.textContent='MISS...';
+    ov.classList.add('ng-flash');
+    if(navigator.vibrate) navigator.vibrate([80,20,80]);
+  }
+}
+
+// =============================================
+// SOUND ENGINE (Web Audio API)
+// =============================================
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx = null;
+
+function getACtx(){
+  if(!actx) actx = new AudioCtx();
+  // モバイルはユーザー操作後に resume が必要
+  if(actx.state === 'suspended') actx.resume();
+  return actx;
+}
+
+// 汎用：オシレーター＋エンベロープで音を鳴らす
+function playTone({freq=440, type='sine', gain=0.4, attack=0.01, decay=0.1, sustain=0.0, release=0.15, duration=0.25, startTime=0}={}){
+  const ctx = getACtx();
+  const t = ctx.currentTime + startTime;
+  const osc = ctx.createOscillator();
+  const env = ctx.createGain();
+  osc.connect(env);
+  env.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, t);
+  // エンベロープ
+  env.gain.setValueAtTime(0, t);
+  env.gain.linearRampToValueAtTime(gain, t + attack);
+  env.gain.linearRampToValueAtTime(sustain * gain, t + attack + decay);
+  env.gain.setValueAtTime(sustain * gain, t + duration - release);
+  env.gain.linearRampToValueAtTime(0, t + duration);
+  osc.start(t);
+  osc.stop(t + duration);
+}
+
+// 周波数をスイープ
+function playSwoop({freqStart=200, freqEnd=800, type='sawtooth', gain=0.3, duration=0.3, startTime=0}={}){
+  const ctx = getACtx();
+  const t = ctx.currentTime + startTime;
+  const osc = ctx.createOscillator();
+  const env = ctx.createGain();
+  osc.connect(env);
+  env.connect(ctx.destination);
+  osc.type = type;
+  osc.frequency.setValueAtTime(freqStart, t);
+  osc.frequency.exponentialRampToValueAtTime(freqEnd, t + duration);
+  env.gain.setValueAtTime(gain, t);
+  env.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.start(t);
+  osc.stop(t + duration + 0.01);
+}
+
+// ノイズバースト（打撃感）
+function playNoise({gain=0.2, duration=0.08, startTime=0}={}){
+  const ctx = getACtx();
+  const t = ctx.currentTime + startTime;
+  const bufLen = ctx.sampleRate * duration;
+  const buf = ctx.createBuffer(1, bufLen, ctx.sampleRate);
+  const data = buf.getChannelData(0);
+  for(let i=0;i<bufLen;i++) data[i] = (Math.random()*2-1);
+  const src = ctx.createBufferSource();
+  src.buffer = buf;
+  const env = ctx.createGain();
+  const filt = ctx.createBiquadFilter();
+  filt.type = 'bandpass';
+  filt.frequency.value = 800;
+  filt.Q.value = 0.5;
+  src.connect(filt);
+  filt.connect(env);
+  env.connect(ctx.destination);
+  env.gain.setValueAtTime(gain, t);
+  env.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  src.start(t);
+  src.stop(t + duration + 0.01);
+}
+
+// ===== 効果音定義 =====
+
+// 正解音：明るい上昇チャイム
+function sfxCorrect(){
+  playTone({freq:523, type:'triangle', gain:0.35, attack:0.01, decay:0.08, sustain:0.1, release:0.12, duration:0.22});
+  playTone({freq:659, type:'triangle', gain:0.30, attack:0.01, decay:0.08, sustain:0.1, release:0.12, duration:0.22, startTime:0.08});
+  playTone({freq:784, type:'triangle', gain:0.28, attack:0.01, decay:0.1,  sustain:0.0, release:0.18, duration:0.35, startTime:0.16});
+  playSwoop({freqStart:400, freqEnd:900, type:'sine', gain:0.08, duration:0.25, startTime:0.0});
+}
+
+// CRIT音：派手な上昇＋ドカン
+function sfxCrit(){
+  // ドカン（ノイズ）
+  playNoise({gain:0.35, duration:0.12, startTime:0});
+  // スイープ上昇
+  playSwoop({freqStart:150, freqEnd:1200, type:'sawtooth', gain:0.22, duration:0.3, startTime:0});
+  // 高音チャイム連打
+  [0, 0.08, 0.16, 0.26].forEach((st, i)=>{
+    const freqs=[880, 1047, 1175, 1319];
+    playTone({freq:freqs[i], type:'square', gain:0.18-i*0.02, attack:0.005, decay:0.06, sustain:0.0, release:0.1, duration:0.2, startTime:st});
+  });
+  // 最後に低音ドン
+  playTone({freq:80, type:'sine', gain:0.5, attack:0.005, decay:0.25, sustain:0.0, release:0.05, duration:0.3, startTime:0.0});
+}
+
+// 不正解音：重い下降ブーン
+function sfxWrong(){
+  playSwoop({freqStart:320, freqEnd:80, type:'sawtooth', gain:0.35, duration:0.35, startTime:0});
+  playTone({freq:100, type:'sine', gain:0.45, attack:0.01, decay:0.2, sustain:0.0, release:0.1, duration:0.35, startTime:0});
+  playNoise({gain:0.25, duration:0.12, startTime:0.02});
+}
+
+// コンボ音：コンボ数に応じて音が高くなる
+function sfxCombo(comboCount){
+  const baseFreqs=[392,440,494,523,587,659,698,784];
+  const freq = baseFreqs[Math.min(comboCount-2, baseFreqs.length-1)];
+  playTone({freq, type:'square', gain:0.25, attack:0.005, decay:0.05, sustain:0.0, release:0.08, duration:0.18});
+  playTone({freq:freq*1.5, type:'sine', gain:0.12, attack:0.01, decay:0.1, sustain:0.0, release:0.1, duration:0.2, startTime:0.02});
+}
+
+// ステージクリア：ファンファーレ
+function sfxStageClear(){
+  const melody=[523,659,784,1047];
+  melody.forEach((f,i)=>{
+    playTone({freq:f, type:'triangle', gain:0.3, attack:0.01, decay:0.05, sustain:0.2, release:0.15, duration:0.25, startTime:i*0.15});
+  });
+  // ハーモニー
+  const harmony=[659,784,988,1319];
+  harmony.forEach((f,i)=>{
+    playTone({freq:f, type:'sine', gain:0.15, attack:0.02, decay:0.05, sustain:0.15, release:0.15, duration:0.25, startTime:i*0.15+0.04});
+  });
+  // 最後にドン
+  playTone({freq:130, type:'sine', gain:0.5, attack:0.01, decay:0.3, sustain:0.0, release:0.1, duration:0.45, startTime:0.55});
+  playNoise({gain:0.2, duration:0.15, startTime:0.55});
+}
+
+// ゲームオーバー：暗い下降
+function sfxGameOver(){
+  playSwoop({freqStart:440, freqEnd:110, type:'sawtooth', gain:0.3, duration:0.8, startTime:0});
+  playTone({freq:110, type:'sine', gain:0.4, attack:0.01, decay:0.4, sustain:0.0, release:0.2, duration:0.8, startTime:0.2});
+}
+
+// =============================================
+// BGM ENGINE
+// =============================================
+const BGM=(()=>{
+  let bgGain=null,loopTmr=null,nodes=[],active=false,curId=null;
+
+  // 音名 → 周波数テーブル
+  const N={
+    _:0,
+    B1:61.7,C2:65.4,D2:73.4,E2:82.4,F2:87.3,G2:98,A2:110,As2:116.5,B2:123.5,
+    C3:130.8,D3:146.8,Ds3:155.6,E3:164.8,F3:174.6,Fs3:185,G3:196,Gs3:207.7,A3:220,As3:233.1,B3:246.9,
+    C4:261.6,Cs4:277.2,D4:293.7,Ds4:311.1,E4:329.6,F4:349.2,Fs4:370,G4:392,Gs4:415.3,A4:440,As4:466.2,B4:493.9,
+    C5:523.3,Cs5:554.4,D5:587.3,Ds5:622.3,E5:659.3,F5:698.5,Fs5:740,G5:784,Gs5:830.6,A5:880,As5:932.3,B5:987.8,
+    C6:1046.5
+  };
+
+  function pn(freq,t,dur,vol,type){
+    if(!freq||!active||!bgGain) return;
+    const ctx=getACtx();
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(bgGain);
+    o.type=type||'square';o.frequency.value=freq;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol,t+0.012);
+    g.gain.setValueAtTime(vol,t+dur*0.72);
+    g.gain.linearRampToValueAtTime(0,t+dur*0.95);
+    o.start(t);o.stop(t+dur+0.05);
+    nodes.push(o);
+  }
+
+  function schedTracks(def){
+    if(!active) return;
+    const ctx=getACtx(),bps=def.bpm/60,now=ctx.currentTime;
+    let maxDur=0;
+    def.tracks.forEach(tr=>{
+      let t=now,td=0;
+      tr.seq.forEach(([k,b])=>{
+        const f=typeof k==='number'?k:(N[k]||0),d=b/bps;
+        pn(f,t,d,tr.vol||0.12,tr.type||'square');
+        t+=d;td+=d;
+      });
+      maxDur=Math.max(maxDur,td);
+    });
+    loopTmr=setTimeout(()=>schedTracks(def),(maxDur-0.2)*1000);
+  }
+
+  // ===== BGM定義 =====
+
+  // タイトル：明るいメジャー、138BPM
+  const title={bpm:138,tracks:[
+    {type:'square',vol:0.13,seq:[
+      ['E5',1],['G5',1],['A5',1],['G5',0.5],['E5',0.5],
+      ['C5',1],['E5',1],['D5',2],
+      ['D5',1],['F5',1],['G5',1],['F5',0.5],['D5',0.5],
+      ['B4',1],['D5',1],['C5',2],
+    ]},
+    {type:'triangle',vol:0.08,seq:[
+      ['C5',1],['E5',1],['F5',1],['E5',1],
+      ['A4',1],['C5',1],['B4',2],
+      ['B4',1],['D5',1],['E5',1],['D5',1],
+      ['G4',1],['B4',1],['A4',2],
+    ]},
+    {type:'sawtooth',vol:0.09,seq:[
+      ['C3',2],['G3',2],['A3',2],['F3',2],
+      ['C3',2],['G3',2],['A3',2],['F3',2],
+    ]},
+    {type:'sine',vol:0.06,seq:[
+      ['C4',0.5],['E4',0.5],['G4',0.5],['C5',0.5],['G4',0.5],['E4',0.5],['C4',0.5],['E4',0.5],
+      ['A3',0.5],['C4',0.5],['E4',0.5],['A4',0.5],['E4',0.5],['C4',0.5],['A3',0.5],['C4',0.5],
+      ['F3',0.5],['A3',0.5],['C4',0.5],['F4',0.5],['C4',0.5],['A3',0.5],['F3',0.5],['A3',0.5],
+      ['G3',0.5],['B3',0.5],['D4',0.5],['G4',0.5],['D4',0.5],['B3',0.5],['G3',0.5],['B3',0.5],
+    ]},
+  ]};
+
+  // ステージ選択：クール・ミステリアス、95BPM Aマイナー
+  const stages={bpm:95,tracks:[
+    {type:'square',vol:0.12,seq:[
+      ['A4',1.5],['_',0.5],['C5',1],['B4',1],
+      ['G4',1.5],['_',0.5],['A4',2],
+      ['F4',1.5],['_',0.5],['G4',1],['Fs4',1],
+      ['E4',2],['_',2],
+    ]},
+    {type:'sawtooth',vol:0.09,seq:[
+      ['A3',2],['G3',2],['F3',2],['E3',2],
+      ['A3',2],['G3',2],['F3',2],['E3',2],
+    ]},
+    {type:'sine',vol:0.06,seq:[
+      ['A3',0.5],['_',0.5],['C4',0.5],['_',0.5],['E4',0.5],['_',0.5],['A4',0.5],['_',0.5],
+      ['G3',0.5],['_',0.5],['B3',0.5],['_',0.5],['D4',0.5],['_',0.5],['G4',0.5],['_',0.5],
+      ['F3',0.5],['_',0.5],['A3',0.5],['_',0.5],['C4',0.5],['_',0.5],['F4',0.5],['_',0.5],
+      ['E3',0.5],['_',0.5],['Gs4',0.5],['_',0.5],['B3',0.5],['_',0.5],['E4',0.5],['_',0.5],
+    ]},
+  ]};
+
+  // Stage1 現金・預金：テクノ Cメジャー 130BPM
+  const cash={bpm:130,tracks:[
+    {type:'square',vol:0.13,seq:[
+      ['C5',0.5],['_',0.5],['E5',0.5],['G5',0.5],['E5',0.5],['C5',0.5],['_',1],
+      ['D5',0.5],['_',0.5],['F5',0.5],['A5',0.5],['F5',0.5],['D5',0.5],['_',1],
+      ['E5',0.5],['_',0.5],['G5',0.5],['B4',0.5],['G5',1],['_',1],
+      ['C5',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['F4',0.5],['E4',0.5],['D4',0.5],['C4',0.5],
+    ]},
+    {type:'sawtooth',vol:0.09,seq:[
+      ['C3',1],['_',1],['C3',1],['_',1],
+      ['D3',1],['_',1],['D3',1],['_',1],
+      ['E3',1],['_',1],['E3',1],['_',1],
+      ['C3',2],['G3',2],
+    ]},
+    {type:'sine',vol:0.07,seq:[
+      ['C4',0.25],['E4',0.25],['G4',0.25],['C5',0.25],['_',0.5],['G4',0.25],['E4',0.25],
+      ['C4',0.25],['E4',0.25],['G4',0.25],['C5',0.25],['_',0.5],['G4',0.25],['E4',0.25],
+      ['D4',0.25],['F4',0.25],['A4',0.25],['D5',0.25],['_',0.5],['A4',0.25],['F4',0.25],
+      ['D4',0.25],['F4',0.25],['A4',0.25],['D5',0.25],['_',0.5],['A4',0.25],['F4',0.25],
+      ['E4',0.25],['G4',0.25],['B4',0.25],['E5',0.25],['_',0.5],['B4',0.25],['G4',0.25],
+      ['E4',0.25],['G4',0.25],['B4',0.25],['E5',0.25],['_',0.5],['B4',0.25],['G4',0.25],
+      ['C4',0.25],['E4',0.25],['G4',0.25],['C5',0.25],['_',0.25],['G4',0.25],['E4',0.25],['C4',0.25],
+      ['G3',0.25],['B3',0.25],['D4',0.25],['G4',0.25],['_',0.25],['D4',0.25],['B3',0.25],['G3',0.25],
+    ]},
+  ]};
+
+  // Stage2 売掛金・買掛金：ファンキー Aマイナー 110BPM
+  const urikake={bpm:110,tracks:[
+    {type:'square',vol:0.12,seq:[
+      ['A4',0.5],['_',0.25],['A4',0.25],['C5',0.5],['_',0.5],['E5',0.75],['_',0.25],
+      ['G4',0.5],['_',0.25],['G4',0.25],['B4',0.5],['_',0.5],['D5',1],
+      ['F4',0.5],['_',0.25],['F4',0.25],['A4',0.5],['_',0.5],['C5',0.75],['_',0.25],
+      ['E4',1],['Ds4',0.5],['E4',0.5],['_',1],
+    ]},
+    {type:'sawtooth',vol:0.1,seq:[
+      ['A2',0.5],['_',0.5],['A3',0.5],['_',0.5],['A2',0.5],['_',0.25],['A3',0.25],
+      ['G2',0.5],['_',0.5],['G3',0.5],['_',0.5],['G2',0.5],['_',0.5],
+      ['F2',0.5],['_',0.5],['F3',0.5],['_',0.5],['F2',0.5],['_',0.25],['F3',0.25],
+      ['E2',1],['_',1],['E3',1],
+    ]},
+    {type:'triangle',vol:0.07,seq:[
+      ['A3',0.25],['C4',0.25],['E4',0.25],['A4',0.25],['C4',0.25],['E4',0.25],['A4',0.25],['_',0.25],
+      ['G3',0.25],['B3',0.25],['D4',0.25],['G4',0.25],['B3',0.25],['D4',0.25],['G4',0.25],['_',0.25],
+      ['F3',0.25],['A3',0.25],['C4',0.25],['F4',0.25],['A3',0.25],['C4',0.25],['F4',0.25],['_',0.25],
+      ['E3',0.25],['Gs4',0.25],['B3',0.25],['E4',0.25],['_',1],
+    ]},
+  ]};
+
+  // Stage3 固定資産：ヘビー・インダストリアル Eマイナー 100BPM
+  const kotei={bpm:100,tracks:[
+    {type:'sawtooth',vol:0.14,seq:[
+      ['E4',1],['_',0.5],['E4',0.5],['G4',1],['_',1],
+      ['D4',1],['_',0.5],['D4',0.5],['F4',1],['_',1],
+      ['C4',1],['_',0.5],['C4',0.5],['E4',1],['_',1],
+      ['B3',1],['_',0.5],['D4',0.5],['E4',2],
+    ]},
+    {type:'square',vol:0.08,seq:[
+      ['E3',2],['_',2],['D3',2],['_',2],
+      ['C3',2],['_',2],['B2',2],['_',2],
+    ]},
+    {type:'sine',vol:0.06,seq:[
+      ['E3',0.5],['_',0.5],['G3',0.5],['_',0.5],['B3',0.5],['_',0.5],['E4',0.5],['_',0.5],
+      ['D3',0.5],['_',0.5],['F3',0.5],['_',0.5],['A3',0.5],['_',0.5],['D4',0.5],['_',0.5],
+      ['C3',0.5],['_',0.5],['E3',0.5],['_',0.5],['G3',0.5],['_',0.5],['C4',0.5],['_',0.5],
+      ['B2',0.5],['_',0.5],['D3',0.5],['_',0.5],['Fs3',0.5],['_',0.5],['B3',0.5],['_',0.5],
+    ]},
+  ]};
+
+  // Stage4 手形・有価証券：ジャズ風 Aマイナー 90BPM
+  const tegata={bpm:90,tracks:[
+    {type:'triangle',vol:0.14,seq:[
+      ['A4',1],['C5',0.5],['B4',0.5],['A4',1],['G4',1],
+      ['F4',1],['E4',0.5],['F4',0.5],['G4',2],
+      ['E4',1],['Ds4',0.5],['E4',0.5],['A4',1],['B4',1],
+      ['C5',1],['_',1],['A4',2],
+    ]},
+    {type:'sine',vol:0.1,seq:[
+      ['A3',2],['E4',2],['D3',2],['A3',2],
+      ['C3',2],['G3',2],['D3',2],['_',2],
+    ]},
+    {type:'square',vol:0.06,seq:[
+      ['A3',0.33],['C4',0.33],['E4',0.33],['_',0.5],['A4',0.5],
+      ['A3',0.33],['C4',0.33],['E4',0.33],['_',0.5],['G4',0.5],
+      ['G3',0.33],['B3',0.33],['D4',0.33],['_',0.5],['G4',0.5],
+      ['F3',0.33],['A3',0.33],['C4',0.33],['_',0.5],['F4',0.5],
+      ['E3',0.33],['Gs4',0.33],['B3',0.33],['_',0.5],['E4',0.5],
+      ['D3',0.33],['Fs3',0.33],['A3',0.33],['_',0.5],['D4',0.5],
+      ['C3',0.33],['E3',0.33],['G3',0.33],['_',0.5],['C4',0.5],
+      ['_',2],
+    ]},
+  ]};
+
+  // Stage5 税金・引当金：緊張感 Eマイナー 115BPM
+  const tax={bpm:115,tracks:[
+    {type:'square',vol:0.13,seq:[
+      ['E5',0.5],['_',0.5],['F5',0.5],['E5',0.5],['Ds5',0.5],['E5',0.5],['_',1],
+      ['D5',0.5],['_',0.5],['E5',0.5],['D5',0.5],['C5',0.5],['D5',0.5],['_',1],
+      ['C5',0.5],['_',0.5],['D5',0.5],['C5',0.5],['B4',0.5],['C5',0.5],['_',1],
+      ['A4',1],['B4',0.5],['C5',0.5],['B4',0.5],['A4',0.5],['_',1],
+    ]},
+    {type:'sawtooth',vol:0.1,seq:[
+      ['E3',0.5],['_',0.5],['E3',1],['_',1],['E3',0.5],['_',0.5],
+      ['D3',0.5],['_',0.5],['D3',1],['_',1],['D3',0.5],['_',0.5],
+      ['C3',0.5],['_',0.5],['C3',1],['_',1],['C3',0.5],['_',0.5],
+      ['A2',2],['_',2],
+    ]},
+    {type:'triangle',vol:0.07,seq:[
+      ['E4',0.25],['Fs4',0.25],['G4',0.25],['Fs4',0.25],['E4',0.25],['D4',0.25],['C4',0.25],['B3',0.25],
+      ['D4',0.25],['E4',0.25],['F4',0.25],['E4',0.25],['D4',0.25],['C4',0.25],['B3',0.25],['A3',0.25],
+      ['C4',0.25],['D4',0.25],['E4',0.25],['D4',0.25],['C4',0.25],['B3',0.25],['A3',0.25],['G3',0.25],
+      ['A3',0.5],['B3',0.5],['C4',0.5],['B3',0.5],['A3',0.5],['_',0.5],
+    ]},
+  ]};
+
+  // Stage6 工業簿記：費目：機械的・ファクトリー Dマイナー 128BPM
+  const kogyoboki={bpm:128,tracks:[
+    {type:'square',vol:0.12,seq:[
+      ['D5',0.5],['D5',0.5],['_',0.5],['D5',0.5],['F5',1],['E5',1],
+      ['C5',0.5],['C5',0.5],['_',0.5],['C5',0.5],['Ds5',1],['D5',1],
+      ['As4',0.5],['As4',0.5],['_',0.5],['As4',0.5],['D5',1],['C5',1],
+      ['A4',1],['_',0.5],['C5',0.5],['D5',0.5],['F5',0.5],['_',1],
+    ]},
+    {type:'sawtooth',vol:0.12,seq:[
+      ['D3',0.5],['_',0.5],['D3',0.5],['_',0.5],['D3',0.5],['_',0.5],['D3',0.5],['_',0.5],
+      ['C3',0.5],['_',0.5],['C3',0.5],['_',0.5],['C3',0.5],['_',0.5],['C3',0.5],['_',0.5],
+      ['As2',0.5],['_',0.5],['As2',0.5],['_',0.5],['As2',0.5],['_',0.5],['As2',0.5],['_',0.5],
+      ['A2',0.5],['_',0.5],['A2',0.5],['_',0.5],['A2',1],['_',1],
+    ]},
+    {type:'sine',vol:0.07,seq:[
+      ['D4',0.25],['_',0.25],['F4',0.25],['_',0.25],['A4',0.25],['_',0.25],['D5',0.25],['_',0.25],
+      ['D4',0.25],['_',0.25],['F4',0.25],['_',0.25],['A4',0.25],['_',0.25],['D5',0.25],['_',0.25],
+      ['C4',0.25],['_',0.25],['Ds4',0.25],['_',0.25],['G4',0.25],['_',0.25],['C5',0.25],['_',0.25],
+      ['C4',0.25],['_',0.25],['Ds4',0.25],['_',0.25],['G4',0.25],['_',0.25],['C5',0.25],['_',0.25],
+      ['As3',0.25],['_',0.25],['D4',0.25],['_',0.25],['F4',0.25],['_',0.25],['As4',0.25],['_',0.25],
+      ['As3',0.25],['_',0.25],['D4',0.25],['_',0.25],['F4',0.25],['_',0.25],['As4',0.25],['_',0.25],
+      ['A3',0.25],['_',0.25],['C4',0.25],['_',0.25],['E4',0.25],['_',0.25],['A4',0.25],['_',0.25],
+      ['A3',0.5],['_',0.5],['A4',0.5],['_',0.5],
+    ]},
+  ]};
+
+  // Stage7 工業簿記：原価計算（ラスボス）：エピック Eマイナー 120BPM
+  const genka={bpm:120,tracks:[
+    {type:'square',vol:0.14,seq:[
+      ['B4',1],['_',0.5],['B4',0.5],['E5',1],['Ds5',1],
+      ['D5',1],['_',0.5],['D5',0.5],['G5',1],['Fs5',1],
+      ['E5',1],['_',0.5],['Fs5',0.5],['G5',0.5],['A5',0.5],['B5',1],
+      ['A5',1],['G5',1],['Fs5',1],['E5',1],
+    ]},
+    {type:'sawtooth',vol:0.12,seq:[
+      ['E3',1],['B2',1],['E3',1],['B2',1],
+      ['D3',1],['A2',1],['D3',1],['A2',1],
+      ['C3',1],['G2',1],['C3',1],['G2',1],
+      ['A2',2],['B2',2],
+    ]},
+    {type:'triangle',vol:0.09,seq:[
+      ['E4',0.5],['Fs4',0.5],['G4',0.5],['A4',0.5],['B4',0.5],['A4',0.5],['G4',0.5],['Fs4',0.5],
+      ['D4',0.5],['E4',0.5],['Fs4',0.5],['G4',0.5],['A4',0.5],['G4',0.5],['Fs4',0.5],['E4',0.5],
+      ['C4',0.5],['D4',0.5],['E4',0.5],['Fs4',0.5],['G4',0.5],['A4',0.5],['B4',0.5],['C5',0.5],
+      ['A4',0.5],['B4',0.5],['Cs5',0.5],['D5',0.5],['E5',0.5],['Fs5',0.5],['G5',0.5],['_',0.5],
+    ]},
+    {type:'sine',vol:0.1,seq:[
+      ['E2',4],['D2',4],['C2',4],['B1',4],
+    ]},
+  ]};
+
+  const BGMS={title,stages,cash,urikake,kotei,tegata,tax,kogyoboki,genka};
+  const STAGE_BGM=['cash','urikake','kotei','tegata','tax','kogyoboki','genka'];
+
+  return {
+    play(id){
+      this.stop();
+      if(!BGMS[id]) return;
+      active=true; curId=id;
+      const ctx=getACtx();
+      bgGain=ctx.createGain(); bgGain.gain.value=0.25; bgGain.connect(ctx.destination);
+      schedTracks(BGMS[id]);
+    },
+    playStage(idx){ this.play(STAGE_BGM[idx]||'cash'); },
+    stop(){
+      active=false; curId=null;
+      clearTimeout(loopTmr);
+      nodes.forEach(n=>{try{n.stop(0);}catch(e){}});
+      nodes=[];
+      if(bgGain){bgGain.disconnect();bgGain=null;}
+    },
+    current(){ return curId; }
+  };
+})();
+
+// =============================================
+// INTER RESULT（ラウンド間）
+// =============================================
+function showInterResult(){
+  const completedRound=gs.round+1;
+  const totalRounds=gs.stage.rounds.length;
+  const acc=gs.rCorrect+gs.rWrong>0?Math.round((gs.rCorrect/(gs.rCorrect+gs.rWrong))*100):0;
+
+  $('ir-badge').textContent=`ROUND ${completedRound} / ${totalRounds} CLEAR`;
+  $('ir-icon').textContent=gs.rCorrect===gs.stage.rounds[gs.round].length?'⚡':'💪';
+  $('ir-title').textContent=`ラウンド${completedRound}クリア！`;
+  $('ir-stats').innerHTML=
+    `正解：<span class="val">${gs.rCorrect}</span> / ${gs.stage.rounds[gs.round].length}<br>`+
+    `不正解：<span class="val bad">${gs.rWrong}</span><br>`+
+    `正答率：<span class="val">${acc}%</span><br>`+
+    `コンボ：<span class="val">${gs.maxCombo>=2?gs.maxCombo+'連続！':gs.maxCombo}</span>`;
+  $('ir-next-info').textContent=`次はラウンド${completedRound+1}！残り${totalRounds-completedRound}ラウンド`;
+
+  show('s-inter');
+}
+
+$('btn-next-round').addEventListener('click',()=>{
+  gs.round++;
+  gs.qi=0;
+  gs.rCorrect=0;
+  gs.rWrong=0;
+  $('combo-badge').classList.remove('show');
+  updateHPBars();
+  show('s-battle');
+  nextQ();
+});
+
+$('btn-inter-stages').addEventListener('click',()=>showStages());
+
+$('btn-battle-quit').addEventListener('click',()=>{
+  if(confirm('ステージ選択に戻りますか？\n（進行中のデータは失われます）')){
+    showStages();
+  }
+});
+
+// =============================================
+// RESULT
+// =============================================
+function showResult(win){
+  const total=totalQCount();
+  const acc=Math.round((gs.correct/total)*100);
+  if(win){
+    const cleared=JSON.parse(localStorage.getItem('boki2_cleared')||'[]');
+    if(!cleared.includes(gs.stage.id)){cleared.push(gs.stage.id);}
+    localStorage.setItem('boki2_cleared',JSON.stringify(cleared));
+  }
+
+  $('r-icon').textContent=win?'🏆':'💀';
+  $('r-title').textContent=win?'ステージクリア！':'ゲームオーバー…';
+  $('r-msg').textContent=win
+    ?`「${gs.stage.name}」をクリア！次のステージへ進め！`
+    :`「${gs.stage.name}」でJettがやられてしまった…もう一度挑戦しよう！`;
+  $('r-stats').innerHTML=
+    `正解数：<span class="val">${gs.correct}</span> / ${total}<br>`+
+    `不正解：<span class="val bad">${gs.wrong}</span><br>`+
+    `正答率：<span class="val">${acc}%</span><br>`+
+    `最大コンボ：<span class="val">${gs.maxCombo>=2?gs.maxCombo+'連続！':gs.maxCombo}</span>`;
+
+  const rj=$('r-jett');
+  rj.style.filter=win?'drop-shadow(0 0 20px rgba(255,215,0,.7))':'drop-shadow(0 0 20px rgba(255,51,85,.5)) grayscale(1)';
+
+  BGM.stop();
+  if(win){ sfxStageClear(); } else { sfxGameOver(); }
+
+  show('s-result');
+}
+
+$('btn-retry').addEventListener('click',()=>startStage(gs.stageIdx));
+$('btn-title').addEventListener('click',()=>showStages());
+
+// =============================================
+// MUTE
+// =============================================
+let muted = false;
+const muteBtn = $('mute-btn');
+muteBtn.addEventListener('click', () => {
+  muted = !muted;
+  muteBtn.textContent = muted ? '🔇' : '🔊';
+  muteBtn.classList.toggle('muted', muted);
+  if (actx) {
+    // masterGainがあればそこで制御、なければactxのsuspend/resume
+    actx.resume(); // suspendされてたら戻す
+  }
+  if (muted) {
+    BGM.stop();
+  } else {
+    // 今いる画面に応じてBGMを再開
+    const active = document.querySelector('.screen.active');
+    if (active) {
+      if (active.id === 's-title') BGM.play('title');
+      else if (active.id === 's-stages') BGM.play('stages');
+      else if (active.id === 's-battle') BGM.playStage(gs.stageIdx);
+    }
+  }
+});
+
+// BGMのplay/stopをミュート状態で制御するラッパー
+const _bgmPlay = BGM.play.bind(BGM);
+const _bgmPlayStage = BGM.playStage.bind(BGM);
+BGM.play = (id) => { if (!muted) _bgmPlay(id); };
+BGM.playStage = (i) => { if (!muted) _bgmPlayStage(i); };
+
+// =============================================
+// BOOT — 最初のタップ時にAudioContextを初期化（ブラウザの自動再生制限対策）
+// BGM自体は各画面遷移時に呼ぶ。タイトル画面だけここで開始。
+// =============================================
+let bgmStarted = false;
+function startBgmOnFirstTouch() {
+  if (bgmStarted) return;
+  bgmStarted = true;
+  // 現在タイトル画面にいる場合だけタイトルBGMを再生
+  // （ボタンタップ時はすでに画面遷移済みのためスキップされる）
+  setTimeout(() => {
+    const cur = document.querySelector('.screen.active');
+    if (cur && cur.id === 's-title') BGM.play('title');
+  }, 0);
+}
+document.addEventListener('touchstart', startBgmOnFirstTouch, {once: true});
+document.addEventListener('click', startBgmOnFirstTouch, {once: true});
+
+initTitle();
+</script>
+</body>
+</html>

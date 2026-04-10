@@ -1,0 +1,26 @@
+{
+  "name": "簿記1級 × JETT バトル道場",
+  "short_name": "簿記道場",
+  "description": "Jettと学ぶ簿記1級RPG学習アプリ",
+  "start_url": "/souma_app/",
+  "scope": "/souma_app/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#06060f",
+  "theme_color": "#00d4d8",
+  "lang": "ja",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
