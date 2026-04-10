@@ -1,8 +1,8 @@
 {
-  "name": "簿記1級 × JETT バトル道場",
-  "short_name": "簿記道場",
-  "description": "Jettと学ぶ簿記1級RPG学習アプリ",
-  "start_url": "/souma_app/",
+  "name": "簿記2級 × JETT バトル道場",
+  "short_name": "簿記2級道場",
+  "description": "Jettと学ぶ簿記2級バトル学習アプリ",
+  "start_url": "/souma_app/boki2_app.html",
   "scope": "/souma_app/",
   "display": "standalone",
   "orientation": "portrait",

@@ -1,8 +1,7 @@
-const CACHE_NAME = 'boki1-v1';
+const CACHE_NAME = 'boki2-v1';
 const ASSETS = [
-  '/souma_app/',
-  '/souma_app/index.html',
-  '/souma_app/jett.jpg',
+  '/souma_app/boki2_app.html',
+  '/souma_app/ジェット.avif',
   '/souma_app/icon-192.png',
   '/souma_app/icon-512.png',
   '/souma_app/manifest.json'
@@ -33,7 +32,7 @@ self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       return cached || fetch(e.request).catch(function() {
-        return caches.match('/souma_app/index.html');
+        return caches.match('/souma_app/boki2_app.html');
       });
     })
   );

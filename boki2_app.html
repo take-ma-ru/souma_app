@@ -9,6 +9,9 @@
 <meta name="apple-mobile-web-app-title" content="簿記2級道場">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#06060f">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 :root{
@@ -1920,6 +1923,16 @@ document.addEventListener('touchstart', startBgmOnFirstTouch, {once: true});
 document.addEventListener('click', startBgmOnFirstTouch, {once: true});
 
 initTitle();
+
+// =============================================
+// SERVICE WORKER 登録
+// =============================================
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js')
+      .catch(err => console.log('SW registration failed:', err));
+  });
+}
 </script>
 </body>
 </html>
